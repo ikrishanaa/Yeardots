@@ -1,4 +1,4 @@
-```
+```kotlin
 # Compiled and build artifacts
 *.class
 *.o
@@ -9,12 +9,17 @@ target/
 
 # Dependencies
 .gradle/
+node_modules/
+venv/
+.venv/
+__pycache__/
 .mypy_cache/
 .pytest_cache/
-__pycache__/
-coverage/
-htmlcov/
-*.coverage
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
 
 # Environment
 .env
@@ -26,12 +31,13 @@ htmlcov/
 .idea/
 *.swp
 *.swo
-*.tmp
 
-# System
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# System files
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
 ```
