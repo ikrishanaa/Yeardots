@@ -18,6 +18,18 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = Color.White,
 )
 
+object YearDotsColorScheme {
+    @Composable
+    fun generateColors(): List<Color> {
+        return listOf(
+            Color(0xFF1976D2), // Primary - Today
+            Color(0xFF757575), // Secondary - Past
+            Color(0xFFBDBDBD), // Tertiary - Future
+            Color(0xFFFF9800)  // Accent
+        )
+    }
+}
+
 @Composable
 fun OneDotTheme(
     content: @Composable () -> Unit

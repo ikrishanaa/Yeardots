@@ -2,7 +2,6 @@ package com.krishana.onedot.core
 
 import android.graphics.Bitmap
 import com.krishana.onedot.core.WallpaperGenerator.ThemeConfig
-import com.krishana.onedot.core.WallpaperGenerator.BatteryInfo
 import org.junit.Test
 import org.junit.Assert.*
 import org.junit.Before
@@ -25,7 +24,7 @@ class WallpaperGeneratorTest {
             todayColor = 0xFFF97316.toInt(),
             futureColor = 0xFF262626.toInt(),
             backgroundColor = 0xFF050505.toInt(),
-            dotShape = "circle",
+            dotShape = "dot",
             dotDensity = 1
         )
     }

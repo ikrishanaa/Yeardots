@@ -1,16 +1,20 @@
 ```kotlin
 # Compiled and build artifacts
 *.class
-*.dex
-*.jar
-*.aar
+*.o
+*.obj
+*.out
 build/
-.gradle/
-captures/
+target/
 
 # Dependencies
-.libs/
-.externalNativeBuild/
+.gradle/
+node_modules/
+venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
 
 # Logs and temp files
 *.log
@@ -25,17 +29,15 @@ captures/
 # Editors
 .vscode/
 .idea/
-*.iml
-*.iws
+*.swp
 *.swo
-*.swn
 
-# OS generated files
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# System files
 .DS_Store
 Thumbs.db
-
-# Android specific
-*.keystore
-local.properties
-gradle-wrapper.properties
 ```

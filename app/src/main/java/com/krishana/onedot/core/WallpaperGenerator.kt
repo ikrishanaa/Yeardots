@@ -18,31 +18,23 @@ object WallpaperGenerator {
         val todayColor: Int,
         val futureColor: Int,
         val backgroundColor: Int,
-        val dotShape: String = "circle", // "circle" or "square"
+        val dotShape: String = "dot", // "dot", "square", "rounded", "pill"
         val dotDensity: Int = 1 // 0=Tiny, 1=Small, 2=Medium, 3=Large
     )
 
-    data class BatteryInfo(
-        val percentage: Int,
-        val isCharging: Boolean,
-        val isFull: Boolean,
-        val isLow: Boolean
-    )
 
     /**
-     * Generates a bitmap with 364 dots arranged in a 13-column grid.
+     * Generates a bitmap with dots arranged in a 15-column grid.
      * 
      * @param width Target width in pixels
      * @param height Target height in pixels
      * @param themeConfig Color configuration
-     * @param batteryInfo Optional battery status information
      * @return Generated wallpaper bitmap
      */
     fun generateBitmap(
         width: Int,
         height: Int,
-        themeConfig: ThemeConfig,
-        batteryInfo: BatteryInfo? = null
+        themeConfig: ThemeConfig
     ): Bitmap {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -68,8 +60,12 @@ object WallpaperGenerator {
 
         // Padding - Compact minimal look
         val topPadding = height * 0.28f  // Space for clock
-        val bottomPadding = height * 0.12f  // Space for bottom text and controls
+        val bottomPadding = height * 0.10f  // Space for bottom text
         val sidePadding = width * 0.08f 
+        
+        // Calculate dynamic text Y position based on grid dimensions
+        // Position text below the grid with appropriate spacing
+        val textYPosition = topPadding + (cellSize * rows) + (height * 0.05f) 
         
         val availableWidth = width - (2 * sidePadding)
         val availableHeight = height - topPadding - bottomPadding
@@ -223,8 +219,8 @@ object WallpaperGenerator {
 
         val text = "$daysLeft days \u2022 $percent% Complete"
         
-        // Position higher for better balance
-        canvas.drawText(text, width / 2f, height * 0.88f, textPaint)
+        // Draw text at dynamically calculated position below the grid
+        canvas.drawText(text, width / 2f, textYPosition, textPaint)
 
         return bitmap
     }
