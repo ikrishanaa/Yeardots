@@ -18,6 +18,10 @@ node_modules/
 .mypy_cache/
 .pytest_cache/
 dist/
+*.class
+*.o
+*.obj
+*.out
 build/
 target/
 .gradle/
@@ -40,11 +44,52 @@ target/
 # System files
 .DS_Store
 Thumbs.db
+# Dependencies
+.gradle/
+node_modules/
+venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Editors
+.vscode/
+.idea/
 
 # Coverage
 coverage/
 htmlcov/
 .coverage
+*.swp
+*.swo
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# System files
+.DS_Store
+Thumbs.db
+
+# MyPy cache
+.mypy_cache/
+
+# PyTest cache
+.pytest_cache/
+
+# Gradle
+.gradle/
+
+# Rust/Cargo
+Cargo.lock
 
 # Compressed files
 *.zip
@@ -69,4 +114,6 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+```
+```
 ```
