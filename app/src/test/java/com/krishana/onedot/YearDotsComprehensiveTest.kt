@@ -8,7 +8,6 @@ import com.krishana.onedot.ui.theme.YearDotsColorScheme
 import com.krishana.onedot.worker.WallpaperWorker
 import androidx.work.WorkManager
 import androidx.work.testing.WorkManagerTestInitHelper
-import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import kotlinx.coroutines.runBlocking
@@ -100,18 +99,9 @@ class YearDotsComprehensiveTest {
     fun testWallpaperWorkerSuccessRecyclesResources() {
         // Bug #3 & #10: Resource Leak & Null Safety in Worker
         // Verify worker completes successfully without crashing (implies proper resource handling)
+        // Note: Worker reads from SettingsRepository, not inputData
         
-        val inputData = Data.Builder()
-            .putString(WallpaperWorker.KEY_SHAPE, "dot")
-            .putInt(WallpaperWorker.KEY_DENSITY, 2)
-            .putInt(WallpaperWorker.KEY_COLOR_TODAY, Color.RED)
-            .putInt(WallpaperWorker.KEY_COLOR_PAST, Color.GRAY)
-            .putInt(WallpaperWorker.KEY_COLOR_FUTURE, Color.LTGRAY)
-            .putBoolean(WallpaperWorker.KEY_LOCK_SCREEN, false)
-            .build()
-
         val workRequest = OneTimeWorkRequestBuilder<WallpaperWorker>()
-            .setInputData(inputData)
             .build()
 
         workManager.enqueue(workRequest).result.get()
@@ -126,16 +116,12 @@ class YearDotsComprehensiveTest {
     fun testWorkerHandlesInvalidInputGracefully() {
         // Bug #10: Missing Null Safety / Error Handling
         // Worker should not crash on edge cases
+        // Note: Since Worker reads from Repository, we test that it handles repository state gracefully
         
-        val inputData = Data.Builder()
-            .putString(WallpaperWorker.KEY_SHAPE, null) // Invalid shape
-            .build()
-
         val workRequest = OneTimeWorkRequestBuilder<WallpaperWorker>()
-            .setInputData(inputData)
             .build()
 
-        // Should not throw exception, should handle gracefully (fallback to default)
+        // Should not throw exception, should handle gracefully with default repository values
         try {
             workManager.enqueue(workRequest).result.get(5, TimeUnit.SECONDS)
             val workInfo = workManager.getWorkInfoById(workRequest.id).get()

@@ -1,43 +1,61 @@
-```kotlin
-# Compiled and build artifacts
-*.class
-*.o
-*.obj
-*.out
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
 build/
+dist/
 target/
 
-# Dependencies
-.gradle/
-node_modules/
+# Virtual environments
 venv/
 .venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-
-# Environment
 .env
 .env.local
 *.env.*
 
-# Editors
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tmp
 
-# Coverage
+# Logs
+*.log
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Coverage reports
 coverage/
 htmlcov/
 .coverage
 
-# System files
+# OS generated files
 .DS_Store
 Thumbs.db
+
+# MyPy cache
+.mypy_cache/
+# Pytest cache
+.pytest_cache/
+
+# Gradle
+.gradle/
+
+# Compiled files
+*.class
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
 ```
