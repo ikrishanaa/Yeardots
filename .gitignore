@@ -1,12 +1,49 @@
 ```
 # Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
+# Dependencies
+.venv/
+venv/
+node_modules/
+.mypy_cache/
+.pytest_cache/
+dist/
 *.class
 *.o
 *.obj
 *.out
 build/
 target/
+.gradle/
 
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
 # Dependencies
 .gradle/
 node_modules/
@@ -26,7 +63,7 @@ __pycache__/
 .vscode/
 .idea/
 
-# Coverage reports
+# Coverage
 coverage/
 htmlcov/
 .coverage
@@ -77,5 +114,6 @@ Cargo.lock
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+```
 ```
 ```
