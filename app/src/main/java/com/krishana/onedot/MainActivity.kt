@@ -72,31 +72,10 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
                 throw SecurityException("SET_WALLPAPER permission not granted. Please enable it in app permissions.")
             }
             
-            // Check storage permissions (needed on some devices)
-            android.util.Log.d("YearDots", "Checking storage permissions...")
-            android.util.Log.d("YearDots", "Android SDK: ${android.os.Build.VERSION.SDK_INT}")
-            
-            val hasStoragePerm = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                val perm = androidx.core.content.ContextCompat.checkSelfPermission(
-                    context, android.Manifest.permission.READ_MEDIA_IMAGES
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                android.util.Log.d("YearDots", "READ_MEDIA_IMAGES permission: $perm")
-                perm
-            } else {
-                val hasRead = androidx.core.content.ContextCompat.checkSelfPermission(
-                    context, android.Manifest.permission.READ_EXTERNAL_STORAGE
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                val hasWrite = androidx.core.content.ContextCompat.checkSelfPermission(
-                    context, android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                android.util.Log.d("YearDots", "READ_EXTERNAL_STORAGE: $hasRead, WRITE_EXTERNAL_STORAGE: $hasWrite")
-                hasRead && hasWrite
-            }
-            
-            if (!hasStoragePerm) {
-                android.util.Log.e("YearDots", "ERROR: Storage permissions not granted!")
-                throw SecurityException("Storage permissions not granted. Please enable them in app settings.")
-            }
+            // CRITICAL FIX #4: Removed unnecessary storage permission checks
+            // WallpaperManager.setBitmap() only requires SET_WALLPAPER permission
+            // Storage permissions are NOT needed for setting wallpaper programmatically
+            android.util.Log.d("YearDots", "Storage permissions not required for WallpaperManager.setBitmap()")
             
             android.util.Log.d("YearDots", "All permissions OK, getting WallpaperManager...")
             val wallpaperManager = WallpaperManager.getInstance(context)
@@ -293,20 +272,21 @@ class MainActivity : ComponentActivity() {
     
     private fun getRequiredPermissions(): List<String> {
         val permissions = mutableListOf<String>()
+
+        // CRITICAL FIX #4: Only SET_WALLPAPER permission is actually required
+        // Storage permissions are NOT needed for WallpaperManager.setBitmap()
+        // The app will work perfectly without them, avoiding unnecessary permission requests
+        // that confuse users and cause failures when denied
         
-        // Core functionality
+        // Core functionality - ONLY permission actually required
         permissions.add(android.Manifest.permission.SET_WALLPAPER)
-        
-        // Android 13+
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            permissions.add(android.Manifest.permission.POST_NOTIFICATIONS)
-            permissions.add(android.Manifest.permission.READ_MEDIA_IMAGES)
-        } else {
-            // Android 12 and below - need both READ and WRITE for wallpaper operations
-            permissions.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-            permissions.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        }
-        
+
+        // Note: Removed all storage permissions as they are not needed:
+        // - READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE: Not needed
+        // - READ_MEDIA_IMAGES: Not needed  
+        // - POST_NOTIFICATIONS: Not used in this app
+        // WallpaperManager.setBitmap() works with just SET_WALLPAPER permission
+
         return permissions
     }
 }
