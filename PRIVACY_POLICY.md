@@ -64,7 +64,7 @@ Year Dots is open source. You can:
 - Verify that no data collection occurs
 - Build the app yourself from source
 
-**GitHub Repository:** https://github.com/ikrishanaa/Year-Dots
+**GitHub Repository:** https://github.com/ikrishanaa/Yeardots
 
 ## Changes to This Policy
 
@@ -74,7 +74,7 @@ Any changes to this privacy policy will be posted to this file in the repository
 
 If you have questions about this privacy policy:
 - Email: krishanaindia773@gmail.com
-- Open an issue on GitHub: https://github.com/ikrishanaa/Year-Dots/issues
+- Open an issue on GitHub: https://github.com/ikrishanaa/Yeardots/issues
 - Telegram: https://t.me/yeardots
 
 ## Your Rights
