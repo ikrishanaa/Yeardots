@@ -4,33 +4,17 @@
 *.o
 *.obj
 *.out
-*.dll
-*.so
-*.a
-*.exe
-
-# Dependencies
-.libs/
-.libs-rust/
-node_modules/
-
-# Build directories
 build/
 target/
-dist/
 
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
+# Dependencies
+.gradle/
+node_modules/
 venv/
 .venv/
-.env
-.env.local
-.env.*
+__pycache__/
+.mypy_cache/
+.pytest_cache/
 
 # Logs and temp files
 *.log
@@ -46,8 +30,15 @@ venv/
 coverage/
 htmlcov/
 .coverage
+*.swp
+*.swo
 
-# OS generated files
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# System files
 .DS_Store
 Thumbs.db
 
@@ -86,4 +77,5 @@ Cargo.lock
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+```
 ```
