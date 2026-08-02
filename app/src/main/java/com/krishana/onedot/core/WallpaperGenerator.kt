@@ -63,10 +63,6 @@ object WallpaperGenerator {
         val bottomPadding = height * 0.10f  // Space for bottom text
         val sidePadding = width * 0.08f 
         
-        // Calculate dynamic text Y position based on grid dimensions
-        // Position text below the grid with appropriate spacing
-        val textYPosition = topPadding + (cellSize * rows) + (height * 0.05f) 
-        
         val availableWidth = width - (2 * sidePadding)
         val availableHeight = height - topPadding - bottomPadding
         
@@ -78,6 +74,10 @@ object WallpaperGenerator {
         
         // Use the smaller dimension to ensure everything fits
         val cellSize = min(cellWidth, cellHeight)
+
+        // Calculate dynamic text Y position based on grid dimensions
+        // Position text below the grid with appropriate spacing
+        val textYPosition = topPadding + (cellSize * rows) + (height * 0.05f)
         
         // Apply density multiplier based on user preference
         // Tiny=0.70x, Small=1.00x, Medium=1.30x, Large=1.60x
