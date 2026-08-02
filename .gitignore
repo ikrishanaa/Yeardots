@@ -1,21 +1,20 @@
-```kotlin
+```
 # Compiled and build artifacts
 *.class
-*.dex
-*.jar
-*.aar
+*.o
+*.obj
+*.out
 build/
-.gradle/
-captures/
+target/
 
 # Dependencies
-.libs/
-.externalNativeBuild/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
+.gradle/
+.mypy_cache/
+.pytest_cache/
+__pycache__/
+coverage/
+htmlcov/
+*.coverage
 
 # Environment
 .env
@@ -25,17 +24,14 @@ captures/
 # Editors
 .vscode/
 .idea/
-*.iml
-*.iws
+*.swp
 *.swo
-*.swn
+*.tmp
 
-# OS generated files
+# System
 .DS_Store
 Thumbs.db
 
-# Android specific
-*.keystore
-local.properties
-gradle-wrapper.properties
+# Logs
+*.log
 ```

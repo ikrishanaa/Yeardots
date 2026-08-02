@@ -32,7 +32,7 @@ class SettingsRepository(private val context: Context) {
         const val DEFAULT_TODAY_COLOR = 0xFFF97316.toInt()     // Orange
         const val DEFAULT_FUTURE_COLOR = 0xFF262626.toInt()    // Dark Grey
         const val DEFAULT_BACKGROUND_COLOR = 0xFF050505.toInt() // Almost Black
-        const val DEFAULT_DOT_SHAPE = "circle"
+        const val DEFAULT_DOT_SHAPE = "dot"
         const val DEFAULT_DOT_DENSITY = 1 // 0=Tiny, 1=Small, 2=Medium, 3=Large
     }
 
@@ -107,12 +107,12 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun getAllColors(): Map<String, Int> {
-        val preferences = context.dataStore.data
+        val preferences = context.dataStore.data.first()
         return mapOf(
-            "past" to (preferences.map { it[PAST_COLOR_KEY] ?: DEFAULT_PAST_COLOR }.first()),
-            "today" to (preferences.map { it[TODAY_COLOR_KEY] ?: DEFAULT_TODAY_COLOR }.first()),
-            "future" to (preferences.map { it[FUTURE_COLOR_KEY] ?: DEFAULT_FUTURE_COLOR }.first()),
-            "background" to (preferences.map { it[BACKGROUND_COLOR_KEY] ?: DEFAULT_BACKGROUND_COLOR }.first())
+            "past" to (preferences[PAST_COLOR_KEY] ?: DEFAULT_PAST_COLOR),
+            "today" to (preferences[TODAY_COLOR_KEY] ?: DEFAULT_TODAY_COLOR),
+            "future" to (preferences[FUTURE_COLOR_KEY] ?: DEFAULT_FUTURE_COLOR),
+            "background" to (preferences[BACKGROUND_COLOR_KEY] ?: DEFAULT_BACKGROUND_COLOR)
         )
     }
 
