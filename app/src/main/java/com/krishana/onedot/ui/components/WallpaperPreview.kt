@@ -21,19 +21,24 @@ fun WallpaperPreview(
     dotShape: String = "dot",
     dotDensity: Int = 2 // 0=Tiny, 1=Small, 2=Medium, 3=Large
 ) {
-    // 15x15 grid preview (225 dots)
-    val totalDots = 15 * 15
-    val currentDay = 113 // Middle of the grid to show progress clearly
+    // Calculate current day of year dynamically for accurate preview
+    val currentDay = java.time.LocalDate.now().dayOfYear
     
-    // Calculate dot size based on density
-    // For 15x15 grid, available width is ~21dp per cell.
-    // We can go larger to fill the space better.
+    // Use same grid layout as actual wallpaper (15 columns)
+    // Show partial grid that represents the full layout better
+    val columns = 15
+    val rows = 15 // Keep preview manageable but representative
+    val totalDots = columns * rows
+    
+    // Calculate dot size based on density - matching generator multipliers
+    // Generator uses cellSize * 0.28f * densityMultiplier where multiplier is 0.70, 1.00, 1.30, 1.60
+    // For preview in dp, we scale proportionally
     val dotSize = when (dotDensity) {
-        0 -> 9.dp   // Tiny (was 4.dp)
-        1 -> 12.dp   // Small (was 6.dp)
-        2 -> 15.dp  // Medium (was 8.dp)
-        3 -> 18.dp  // Large (was 10.dp)
-        else -> 12.dp
+        0 -> 8.dp   // Tiny (0.70x)
+        1 -> 11.dp   // Small (1.00x - default)
+        2 -> 14.dp  // Medium (1.30x)
+        3 -> 18.dp  // Large (1.60x)
+        else -> 11.dp
     }
     
     // Get shape object based on dotShape name
