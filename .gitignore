@@ -12,6 +12,7 @@
 # Dependencies
 .libs/
 .libs-rust/
+node_modules/
 
 # Build directories
 build/
@@ -35,6 +36,7 @@ venv/
 *.log
 *.tmp
 *.swp
+*.swo
 
 # Editors
 .vscode/
@@ -60,7 +62,6 @@ Thumbs.db
 
 # Rust/Cargo
 Cargo.lock
-target/
 
 # Compressed files
 *.zip

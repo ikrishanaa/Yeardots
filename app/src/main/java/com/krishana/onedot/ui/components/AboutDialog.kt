@@ -96,7 +96,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
                     subtitle = "Check the GitHub repository and the README",
                     onClick = {
                         try {
-                            uriHandler.openUri("https://github.com/ikrishanaa/Year-Dots")
+                            uriHandler.openUri("https://github.com/ikrishanaa/Yeardots")
                         } catch (e: Exception) {
                             Toast.makeText(context, "No browser found", Toast.LENGTH_SHORT).show()
                         }
@@ -110,7 +110,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
                     subtitle = "Look for changelogs and new versions",
                     onClick = {
                         try {
-                            uriHandler.openUri("https://github.com/ikrishanaa/Year-Dots/releases")
+                            uriHandler.openUri("https://github.com/ikrishanaa/Yeardots/releases")
                         } catch (e: Exception) {
                             Toast.makeText(context, "No browser found", Toast.LENGTH_SHORT).show()
                         }
@@ -124,7 +124,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
                     subtitle = "Submit an issue for bug report or feature request",
                     onClick = {
                         try {
-                            uriHandler.openUri("https://github.com/ikrishanaa/Year-Dots/issues")
+                            uriHandler.openUri("https://github.com/ikrishanaa/Yeardots/issues")
                         } catch (e: Exception) {
                             Toast.makeText(context, "No browser found", Toast.LENGTH_SHORT).show()
                         }

@@ -16,7 +16,7 @@ If you discover a security vulnerability, please report it via:
 
 **Email:** krishanaindia773@gmail.com
 
-**GitHub Security Advisories:** https://github.com/ikrishanaa/Year-Dots/security/advisories/new
+**GitHub Security Advisories:** https://github.com/ikrishanaa/Yeardots/security/advisories/new
 
 **What to include:**
 - Type of vulnerability

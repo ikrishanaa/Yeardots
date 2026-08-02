@@ -11,9 +11,14 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout code
@@ -40,29 +45,37 @@ jobs:
           echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
         fi
         
-    - name: Build release APK
+    - name: Decode Keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+        
+    - name: Build and Sign APKs
       run: ./gradlew assembleRelease --stacktrace
       env:
+        KEYSTORE_FILE: ../release.keystore
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         
-    - name: Sign APK
-      if: env.KEYSTORE_PASSWORD != ''
+    - name: Rename APKs
       run: |
-        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
-        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-          -keystore release.keystore \
-          -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
-          -keypass "${{ secrets.KEY_PASSWORD }}" \
-          app/build/outputs/apk/release/app-release-unsigned.apk \
-          ${{ secrets.KEY_ALIAS }}
-        rm release.keystore
-        
-    - name: Rename APK
-      run: |
-        mv app/build/outputs/apk/release/app-release-unsigned.apk \
-           app/build/outputs/apk/release/YearDots-${{ steps.version.outputs.VERSION }}.apk
+        # Loop through all generated APKs
+        find app/build/outputs/apk/release -name "*.apk" -print0 | while IFS= read -r -d '' file; do
+          # Skip if it's already renamed or doesn't match expected pattern
+          if [[ "$file" == *"YearDots"* ]]; then continue; fi
+          
+          # Extract abi name
+          if [[ "$file" =~ app-([a-zA-Z0-9_-]+)-release.apk ]]; then
+            ABI="${BASH_REMATCH[1]}"
+          elif [[ "$file" =~ app-release.apk ]]; then
+             ABI="universal"
+          else
+            ABI="unknown"
+          fi
+             
+          # Rename to YearDots-vX.Y.Z-abi.apk
+          mv "$file" "app/build/outputs/apk/release/YearDots-${{ steps.version.outputs.VERSION }}-$ABI.apk"
+        done
         
     - name: Generate changelog
       id: changelog
@@ -77,7 +90,7 @@ jobs:
         name: Release ${{ steps.version.outputs.VERSION }}
         body_path: release_notes.txt
         files: |
-          app/build/outputs/apk/release/YearDots-${{ steps.version.outputs.VERSION }}.apk
+          app/build/outputs/apk/release/YearDots-*.apk
         draft: false
         prerelease: false
       env:

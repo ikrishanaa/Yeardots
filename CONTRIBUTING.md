@@ -20,7 +20,7 @@ Before creating bug reports, please check existing issues to avoid duplicates.
 - **Screenshots** if applicable
 - **Logs** if available (use `adb logcat`)
 
-Use the [Bug Report template](https://github.com/ikrishanaa/Year-Dots/issues/new?template=bug_report.yml).
+Use the [Bug Report template](https://github.com/ikrishanaa/Yeardots/issues/new?template=bug_report.yml).
 
 ### 💡 Suggesting Features
 
@@ -30,7 +30,7 @@ Feature requests are welcome! Please:
 - Explain why this feature would be useful to most users
 - Consider whether it fits the app's minimalist philosophy
 
-Use the [Feature Request template](https://github.com/ikrishanaa/Year-Dots/issues/new?template=feature_request.yml).
+Use the [Feature Request template](https://github.com/ikrishanaa/Yeardots/issues/new?template=feature_request.yml).
 
 ### 🔧 Pull Requests
 
@@ -72,7 +72,7 @@ Use the [Feature Request template](https://github.com/ikrishanaa/Year-Dots/issue
 
 ### Building Locally
 ```bash
-git clone https://github.com/ikrishanaa/Year-Dots.git
+git clone https://github.com/ikrishanaa/Yeardots.git
 cd year-dots
 ./gradlew assembleDebug
 ```
@@ -163,7 +163,7 @@ chore(deps): update WorkManager to 2.9.0
 ## Questions?
 
 Feel free to:
-- Open a [discussion](https://github.com/ikrishanaa/Year-Dots/discussions)
+- Open a [discussion](https://github.com/ikrishanaa/Yeardots/discussions)
 - Comment on existing issues
 - Reach out to maintainers
 

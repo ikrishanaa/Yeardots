@@ -1,19 +1,20 @@
-Year Dots transforms your phone's wallpaper into a daily reminder of time's passage. Each day of the year is represented by a single dot in a 365-dot grid that updates automatically at midnight.
+Turn your Android wallpaper into a powerful productivity tool with Yeardots.
 
-Features:
-• 365-dot calendar grid - Visual representation of the entire year
-• Automatic daily updates - Wallpaper refreshes at midnight
-• Fully customizable colors - Choose colors for past, present, future, and background
-• Four dot shapes - Circle, Rounded Square, Square, and Pill
-• Four size options - Tiny, Small, Medium, and Large dot densities
-• Live preview - See changes in real-time before applying
+Yeardots is a minimalist "Life Calendar" that visualizes your year as a 365-dot grid. Every day, a new dot fills in, creating a subtle yet constant reminder of time's passage (Memento Mori). It's designed to help you beat procrastination, stay focused on long-term goals, and practice digital minimalism.
 
-Privacy & Performance:
-• 100% Offline - No internet permission, no tracking
-• Battery Efficient - Optimized background tasks
-• AMOLED-Friendly - Dark backgrounds save battery
-• No Data Collection - Your privacy is guaranteed
+**Why use Yeardots?**
+• **Visualize Time:** See exactly how much of the year has passed at a glance.
+• **Beat Procrastination:** A gentle daily nudge to make today count.
+• **Stoic Reflection:** Embrace the philosophy of Memento Mori in a modern way.
+• **Battery Friendly:** Updates only once at midnight. Zero battery drain.
+• **Privacy First:** 100% Offline. No ads. No tracking. Open Source.
 
-Inspired by life calendar visualizations and the philosophy that awareness of time's finite nature helps us live more intentionally.
+**Key Features:**
+• 🗓️ **365-Dot Grid:** A beautiful, clean visualization of your year.
+• 🎨 **Fully Customizable:** Choose colors for Past, Today, Future, and Background.
+• 🔲 **Shape Options:** Circle, Rounded Square, Square, and Pill.
+• 📏 **Density Control:** Tiny, Small, Medium, or Large grids to fit your aesthetic.
+• 🌑 **AMOLED Support:** Pure black backgrounds for deep contrast and power saving.
+• 🔄 **Auto-Update:** Reliable background updates using WorkManager.
 
-Open source under MIT License.
+Perfect for fans of "4000 Weeks", "Atomic Habits", and the quantifiable self movement. Take control of your time, one dot at a time.

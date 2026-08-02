@@ -170,8 +170,8 @@ Privacy:
 3. Use the "Request For Packaging" template
 4. Fill in:
    - **App name:** Year Dots
-   - **Homepage:** https://github.com/ikrishanaa/Year-Dots
-   - **Source code:** https://github.com/ikrishanaa/Year-Dots
+   - **Homepage:** https://github.com/ikrishanaa/Yeardots
+   - **Source code:** https://github.com/ikrishanaa/Yeardots
    - **License:** MIT
    - **Description:** Brief description of your app
 5. Submit the issue
@@ -196,14 +196,14 @@ If you're comfortable with Git:
    License: MIT
    AuthorName: Krishana
    AuthorEmail: krishanaindia773@gmail.com
-   SourceCode: https://github.com/ikrishanaa/Year-Dots
-   IssueTracker: https://github.com/ikrishanaa/Year-Dots/issues
-   Changelog: https://github.com/ikrishanaa/Year-Dots/blob/main/CHANGELOG.md
+   SourceCode: https://github.com/ikrishanaa/Yeardots
+   IssueTracker: https://github.com/ikrishanaa/Yeardots/issues
+   Changelog: https://github.com/ikrishanaa/Yeardots/blob/main/CHANGELOG.md
 
    AutoName: Year Dots
 
    RepoType: git
-   Repo: https://github.com/ikrishanaa/Year-Dots.git
+   Repo: https://github.com/ikrishanaa/Yeardots.git
 
    Builds:
      - versionName: '1.0.0'
@@ -431,7 +431,7 @@ fastlane/metadata/android/en-US/images/icon.png
 - **F-Droid Documentation:** https://f-droid.org/en/docs/
 - **F-Droid Forum:** https://forum.f-droid.org/
 - **IzzyOnDroid:** https://apt.izzysoft.de/fdroid/
-- **Year Dots Issues:** https://github.com/ikrishanaa/Year-Dots/issues
+- **Year Dots Issues:** https://github.com/ikrishanaa/Yeardots/issues
 
 ---
 
