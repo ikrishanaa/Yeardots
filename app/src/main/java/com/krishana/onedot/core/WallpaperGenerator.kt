@@ -86,6 +86,9 @@ object WallpaperGenerator {
         // Now calculate text Y position with cellSize available
         val textYPosition = topPadding + (cellSize * rows) + (height * 0.05f)
         
+        // Now calculate text Y position with cellSize available
+        val textYPosition = topPadding + (cellSize * rows) + (height * 0.05f)
+        
         // Apply density multiplier based on user preference
         // Tiny=0.70x, Small=1.00x, Medium=1.30x, Large=1.60x
         val densityMultiplier = when (themeConfig.dotDensity) {
