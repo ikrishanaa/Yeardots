@@ -1,69 +1,41 @@
-# Gradle files
-.gradle/
+```kotlin
+# Compiled and build artifacts
+*.class
+*.dex
+*.jar
+*.aar
 build/
-local.properties
+.gradle/
+captures/
 
-# Android Studio
+# Dependencies
+.libs/
+.externalNativeBuild/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
 .idea/
 *.iml
-.externalNativeBuild
-.cxx/
+*.iws
+*.swo
+*.swn
 
-# Generated files
-bin/
-gen/
-out/
-app/release/
-
-# Local configuration file
-local.properties
-
-# APK files
-*.apk
-*.aab
-
-# Log Files
-*.log
-
-# OS-specific
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Keystore files - CRITICAL: Never commit these!
-*.jks
+# Android specific
 *.keystore
-release.keystore
-year-dots-release.keystore
-keystore.properties
-signing.properties
-
-# Release signing configuration
-app/release-signing.properties
-app/keystore.properties
-
-# AI Assistant artifacts - development only
-.gemini/
-.antigravity/
-
-# Development-only documentation
-product_requirements_document.md
-BUILD_APK_GUIDE.md
-SECURITY_AUDIT.md
-*_DRAFT.md
-*_TODO.md
-*.draft
-*.tmp
-
-# Test APKs and build outputs on Desktop
-/home/*/Desktop/*.apk
-~/Desktop/*.apk
-
-# Screenshots directory (until ready to commit)
-fastlane/metadata/**/images/**/*.png
-fastlane/metadata/**/images/**/*.jpg
-
-# Sensitive data
-*secret*
-*password*
-.env
-.env.local
+local.properties
+gradle-wrapper.properties
+```

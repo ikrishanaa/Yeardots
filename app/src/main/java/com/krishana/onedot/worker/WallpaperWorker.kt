@@ -66,31 +66,43 @@ class WallpaperWorker(
             // setStream() with PNG maintains original quality
             val stream = java.io.ByteArrayOutputStream()
             
-            // Compress with PNG (lossless) at maximum quality
-            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-            val inputStream = java.io.ByteArrayInputStream(stream.toByteArray())
-            
-            // Set quality hints for wallpaper manager
-            // These hints ensure Android doesn't downscale or compress further
-            wallpaperManager.suggestDesiredDimensions(width, height)
-            
-            // Set wallpaper ONLY on LOCK SCREEN with maximum quality settings
-            // allowBackup=true, which=FLAG_LOCK for lock screen only
-            wallpaperManager.setStream(inputStream, null, true, WallpaperManager.FLAG_LOCK)
-            
-            inputStream.close()
-            stream.close()
+            try {
+                // Compress with PNG (lossless) at maximum quality
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                val inputStream = java.io.ByteArrayInputStream(stream.toByteArray())
+                
+                try {
+                    // Set quality hints for wallpaper manager
+                    // These hints ensure Android doesn't downscale or compress further
+                    wallpaperManager.suggestDesiredDimensions(width, height)
+                    
+                    // Set wallpaper ONLY on LOCK SCREEN with maximum quality settings
+                    // allowBackup=true, which=FLAG_LOCK for lock screen only
+                    wallpaperManager.setStream(inputStream, null, true, WallpaperManager.FLAG_LOCK)
+                } finally {
+                    inputStream.close()
+                }
+            } finally {
+                stream.close()
+                // Clean up bitmap in finally block to ensure it's always recycled
+                bitmap.recycle()
+            }
 
             // Update last update timestamp
             repository.updateLastUpdateTimestamp(System.currentTimeMillis())
 
-            // Clean up
-            bitmap.recycle()
-
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
-            Result.retry()
+            // CRITICAL FIX #3: Don't retry indefinitely on certain errors
+            // For SecurityException (permissions), fail immediately instead of retrying
+            if (e is SecurityException) {
+                android.util.Log.e("WallpaperWorker", "Permission error - cannot retry without permissions", e)
+                Result.failure()
+            } else {
+                // For other errors, retry with exponential backoff (WorkManager default)
+                Result.retry()
+            }
         }
     }
 }

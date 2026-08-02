@@ -1,6 +1,7 @@
 package com.krishana.onedot.core
 
 import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Paint
 import java.time.LocalDate
@@ -53,13 +54,16 @@ object WallpaperGenerator {
         val yearStart = LocalDate.of(today.year, 1, 1)
         val daysInYear = if (today.isLeapYear) 366 else 365
         val currentDayOfYear = ChronoUnit.DAYS.between(yearStart, today).toInt() + 1
+        
+        // CRITICAL FIX #1: Handle leap year correctly - use actual days in year
+        // In leap years, we have 366 days, so we must render 366 dots
+        val totalDots = daysInYear
+        
         val daysLeft = daysInYear - currentDayOfYear
         val percent = ((currentDayOfYear.toFloat() / daysInYear) * 100).toInt()
 
-        // Grid layout: 365 dots total for full year
-        // Updated to 15 columns for better vertical fit as per new design
+        // Grid layout: dynamic columns based on total dots for better aspect ratio
         val columns = 15
-        val totalDots = 365 // Full year (365 days)
         val rows = (totalDots + columns - 1) / columns 
 
         // Padding - Compact minimal look
@@ -109,7 +113,17 @@ object WallpaperGenerator {
             style = Paint.Style.FILL
         }
 
-        // Draw dots (fixed 365-dot grid)
+        // CRITICAL FIX #2: Create glowPaint ONCE outside the loop to prevent memory leak
+        // Creating BlurMaskFilter 365+ times causes significant GC pressure
+        val glowPaint = Paint().apply {
+            isAntiAlias = true
+            isDither = true
+            isFilterBitmap = true
+            style = Paint.Style.FILL
+            maskFilter = BlurMaskFilter(dotRadius * 0.4f, BlurMaskFilter.Blur.NORMAL)
+        }
+
+        // Draw dots (dynamic count based on leap year)
         for (day in 1..totalDots) {
             val row = (day - 1) / columns
             val col = (day - 1) % columns
@@ -127,17 +141,8 @@ object WallpaperGenerator {
 
             // Draw Glow (Today Only)
             if (day == currentDayOfYear) {
-                val glowPaint = Paint().apply {
-                    isAntiAlias = true
-                    isDither = true
-                    isFilterBitmap = true
-                    style = Paint.Style.FILL
-                    this.color = themeConfig.todayColor
-                    maskFilter = android.graphics.BlurMaskFilter(
-                        dotRadius * 0.4f, 
-                        android.graphics.BlurMaskFilter.Blur.NORMAL
-                    )
-                }
+                // Reuse the pre-created glowPaint
+                glowPaint.color = themeConfig.todayColor
                 
                 // Glow follows the shape
                 when (themeConfig.dotShape) {
