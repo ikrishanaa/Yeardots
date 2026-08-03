@@ -36,6 +36,8 @@ Designed for fans of **Stoicism**, **digital minimalism**, and quantifiable self
 - 🎨 **Fully Customizable Colors** - Choose colors for past, present, future, and background
 - 🔲 **Four Dot Shapes** - Circle, Rounded Square, Square, and Pill
 - 📏 **Four Size Options** - Tiny, Small, Medium, and Large dot densities
+- 📐 **Pro Grid Editor** - Fully responsive 8-handle layout editor to perfectly align dots around your lock screen clock
+- 📱 **OEM Clock Presets** - Built-in lock screen clock guides (Small, Medium, Large, XL) for precise visual placement
 - 👁️ **Live Preview** - See changes in real-time before applying
 
 ### Privacy & Performance
@@ -157,11 +159,11 @@ graph TD
 ### Wallpaper Generation Algorithm
 1. Calculate current day of year (1-365/366)
 2. Create bitmap sized to screen dimensions
-3. Calculate 20-column grid layout
-4. For each of 365 positions:
+3. Calculate responsive grid geometry based on custom user bounds and aspect ratio
+4. For each of the 365/366 positions:
    - Determine color (past/today/future)
    - Apply selected shape (circle, rounded, square, pill)
-   - Draw with specified size density
+   - Scale according to dynamic cell size and dot density
 5. Apply subtle glow effect for visual depth
 6. Set as system wallpaper
 
