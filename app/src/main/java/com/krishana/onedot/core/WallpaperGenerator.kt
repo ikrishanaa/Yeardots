@@ -6,7 +6,10 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import kotlin.math.ceil
 import kotlin.math.min
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /**
  * Generates a 365-dot wallpaper representing the current year's progress.
@@ -62,19 +65,22 @@ object WallpaperGenerator {
         val daysLeft = daysInYear - currentDayOfYear
         val percent = ((currentDayOfYear.toFloat() / daysInYear) * 100).toInt()
 
-        // Grid layout: dynamic columns based on total dots for better aspect ratio
-        val columns = 15
-        val rows = (totalDots + columns - 1) / columns 
 
 
         val layout = themeConfig.gridLayout
 
         // --- Grid geometry derived from user fractions ---
-        val gridWidth   = width  * layout.widthFraction
-        val gridHeight  = height * layout.heightFraction
+        val gridWidth  = width  * layout.widthFraction
+        val gridHeight = height * layout.heightFraction
 
-        // Cell size: fit columns into gridWidth (height follows proportionally)
-        val cellSize = gridWidth / columns
+        // Responsive columns: choose cols so that cols/rows ≈ gridWidth/gridHeight
+        // Formula: sqrt(365 × aspectRatio) gives the column count for square-ish cells
+        val ar      = if (gridHeight > 0f) gridWidth / gridHeight else 1f
+        val columns = sqrt(totalDots.toFloat() * ar).roundToInt().coerceIn(5, 25)
+        val rows    = ceil(totalDots.toFloat() / columns).toInt()
+
+        // Fit cells into the box without overflowing either dimension
+        val cellSize = min(gridWidth / columns, gridHeight / rows)
 
         // Apply density multiplier based on user preference
         // Tiny=0.70x, Small=1.00x, Medium=1.30x, Large=1.60x

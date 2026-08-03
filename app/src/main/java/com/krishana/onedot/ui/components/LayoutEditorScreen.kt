@@ -2,10 +2,13 @@ package com.krishana.onedot.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,7 +41,9 @@ import androidx.compose.ui.unit.sp
 import java.time.LocalDate
 import kotlin.math.abs
 import kotlin.math.ceil
+import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 // ─── Clock preset sizes ─────────────────────────────────────────────────────
 private enum class ClockPreset(val label: String, val heightFrac: Float) {
@@ -94,6 +99,20 @@ fun LayoutEditorScreen(
     var isDragging   by remember { mutableStateOf(false) }
     var isSnapped    by remember { mutableStateOf(false) }
     var clockPreset  by remember { mutableStateOf(ClockPreset.MEDIUM) }
+
+    // ── Responsive column/row count — reacts to live grid resize ────────
+    val derivedCols by remember {
+        derivedStateOf {
+            if (screenW <= 0f || screenH <= 0f) 15
+            else {
+                val w  = (gridR - gridL) * screenW
+                val h  = (gridB - gridT) * screenH
+                val ar = if (h > 0f) w / h else 1f
+                sqrt(TOTAL_DOTS.toFloat() * ar).roundToInt().coerceIn(5, 25)
+            }
+        }
+    }
+    val derivedRows by remember { derivedStateOf { ceil(TOTAL_DOTS.toFloat() / derivedCols).toInt() } }
 
     // ── Ghost alpha animates when dragging ────────────────────────────────
     val gridAlpha by animateFloatAsState(
@@ -224,14 +243,25 @@ fun LayoutEditorScreen(
                 val densityMul = when (dotDensity) { 0 -> 0.70f; 2 -> 1.30f; 3 -> 1.60f; else -> 1.00f }
 
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val cellSize = size.width / COLUMNS
+                    // Responsive grid: pick column count to match live aspect ratio
+                    val w    = size.width
+                    val h    = size.height
+                    val ar   = if (h > 0f) w / h else 1f
+                    val cols = sqrt(TOTAL_DOTS.toFloat() * ar).roundToInt().coerceIn(5, 25)
+                    val rows = ceil(TOTAL_DOTS.toFloat() / cols).toInt()
+                    // cellSize fits both axes without overflow
+                    val cellSize = min(w / cols, h / rows)
+                    // Centre the dot sub-grid inside the canvas
+                    val startX = (w - cellSize * cols) / 2f
+                    val startY = (h - cellSize * rows) / 2f
+
                     val dotRadius = cellSize * 0.28f * densityMul
 
                     for (i in 0 until TOTAL_DOTS) {
-                        val col = i % COLUMNS
-                        val row = i / COLUMNS
-                        val cx  = col * cellSize + cellSize / 2f
-                        val cy  = row * cellSize + cellSize / 2f
+                        val col = i % cols
+                        val row = i / cols
+                        val cx  = startX + col * cellSize + cellSize / 2f
+                        val cy  = startY + row * cellSize + cellSize / 2f
                         val color = when {
                             i + 1 < currentDay  -> pastColor
                             i + 1 == currentDay -> todayColor
@@ -501,20 +531,22 @@ fun LayoutEditorScreen(
                 val wPct = ((gridR - gridL) * 100).roundToInt()
                 val hPct = ((gridB - gridT) * 100).roundToInt()
                 Text(
-                    text = "Grid  ${wPct}% wide · ${hPct}% tall",
+                    text = "${wPct}% × ${hPct}%  ·  $derivedCols cols × $derivedRows rows",
                     color = Color.White.copy(alpha = 0.40f),
                     fontSize = 11.sp,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
 
-            // Action buttons
+            // ── Helper buttons row: Reset & Centre-Horizontal ─────────
+            val isCentredH by remember { derivedStateOf { kotlin.math.abs((gridL + gridR) / 2f - 0.5f) < 0.005f } }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Reset
+                // Reset to defaults
                 IconButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -529,6 +561,74 @@ fun LayoutEditorScreen(
                     Icon(Icons.Default.Refresh, contentDescription = "Reset", tint = Color.White)
                 }
 
+                // Centre horizontally — snap left edge so (gridL+gridR)/2 == 0.5
+                val centreHBg = if (isCentredH)
+                    Color(0xFFF97316).copy(alpha = 0.30f)
+                else
+                    Color.White.copy(alpha = 0.10f)
+                val centreHBorder = if (isCentredH)
+                    Color(0xFFF97316).copy(alpha = 0.80f)
+                else
+                    Color.Transparent
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(centreHBg)
+                        .border(1.dp, centreHBorder, RoundedCornerShape(14.dp))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            val hw = (gridR - gridL) / 2f
+                            gridL = 0.5f - hw
+                            gridR = 0.5f + hw
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        // Simple ↔ icon drawn inline
+                        Canvas(modifier = Modifier.size(18.dp)) {
+                            val cy    = size.height / 2f
+                            val mid   = size.width / 2f
+                            val arrowLen = size.width * 0.32f
+                            val stroke = Stroke(width = 2.dp.toPx())
+                            val color  = if (isCentredH) Color(0xFFF97316) else Color.White
+                            // centre vertical line
+                            drawLine(color, Offset(mid, 0f), Offset(mid, size.height), strokeWidth = 2.dp.toPx())
+                            // left arrow
+                            drawLine(color, Offset(0f, cy), Offset(arrowLen, cy), strokeWidth = 2.dp.toPx())
+                            drawLine(color, Offset(0f, cy), Offset(arrowLen * 0.6f, cy - arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
+                            drawLine(color, Offset(0f, cy), Offset(arrowLen * 0.6f, cy + arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
+                            // right arrow
+                            drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen, cy), strokeWidth = 2.dp.toPx())
+                            drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen * 0.6f, cy - arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
+                            drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen * 0.6f, cy + arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
+                        }
+                        Text(
+                            text  = if (isCentredH) "Centred" else "Centre ↔",
+                            color = if (isCentredH) Color(0xFFF97316) else Color.White.copy(alpha = 0.85f),
+                            fontSize = 13.sp,
+                            fontWeight = if (isCentredH) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(4.dp))
+
+            // ── Cancel + Done row ──────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 // Cancel
                 OutlinedButton(
                     onClick  = onDismiss,
@@ -566,6 +666,7 @@ fun LayoutEditorScreen(
                     Text("Done", fontWeight = FontWeight.SemiBold)
                 }
             }
+
         }
 
         // ── Top bar ──────────────────────────────────────────────────────
