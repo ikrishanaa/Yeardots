@@ -14,9 +14,10 @@ import kotlin.math.min
 object WallpaperGenerator {
 
     data class GridLayout(
-        val scale: Float = 1.0f,
-        val offsetX: Float = 0f,
-        val offsetY: Float = 0f
+        val widthFraction: Float  = 0.84f, // grid width  as fraction of wallpaper width
+        val heightFraction: Float = 0.55f, // grid height as fraction of wallpaper height
+        val offsetX: Float = 0f,           // normalised horizontal shift (-0.5 .. +0.5)
+        val offsetY: Float = 0f            // normalised vertical   shift (-0.5 .. +0.5)
     )
 
     data class ThemeConfig(
@@ -65,28 +66,16 @@ object WallpaperGenerator {
         val columns = 15
         val rows = (totalDots + columns - 1) / columns 
 
-        // Padding - Compact minimal look
-        val topPadding = height * 0.28f  // Space for clock
-        val bottomPadding = height * 0.10f  // Space for bottom text
-        val sidePadding = width * 0.08f 
-        
-        val availableWidth = width - (2 * sidePadding)
-        val availableHeight = height - topPadding - bottomPadding
-        
-        // Calculate cell size based on width
-        val cellWidth = availableWidth / columns
-        
-        // Calculate cell height to fit all rows
-        val cellHeight = availableHeight / rows
-        
-        // Use the smaller dimension to ensure everything fits, then apply user scale
-        val baseCellSize = min(cellWidth, cellHeight)
-        val cellSize = baseCellSize * themeConfig.gridLayout.scale
 
-        // Calculate dynamic text Y position based on screen dimensions
-        // Position text near the bottom regardless of grid size/position
-        val textYPosition = height * 0.92f
-        
+        val layout = themeConfig.gridLayout
+
+        // --- Grid geometry derived from user fractions ---
+        val gridWidth   = width  * layout.widthFraction
+        val gridHeight  = height * layout.heightFraction
+
+        // Cell size: fit columns into gridWidth (height follows proportionally)
+        val cellSize = gridWidth / columns
+
         // Apply density multiplier based on user preference
         // Tiny=0.70x, Small=1.00x, Medium=1.30x, Large=1.60x
         val densityMultiplier = when (themeConfig.dotDensity) {
@@ -96,19 +85,17 @@ object WallpaperGenerator {
             3 -> 1.60f  // Large
             else -> 1.00f
         }
-        
-        // Dot size (radius for circle, half-width for square compatibility)
-        // 28% of cell size as radius means diameter is 56% of cell size
-        val dotRadius = cellSize * 0.28f * densityMultiplier
+
+        // Dot size (radius for circle, half-width for square)
+        val dotRadius   = cellSize * 0.28f * densityMultiplier
         val dotDiameter = dotRadius * 2
-        
-        // Recalculate actual grid dimensions
-        val totalGridWidth = cellSize * columns
-        val totalGridHeight = cellSize * rows
-        
-        // Center the grid and apply normalized offsets
-        val startX = (width - totalGridWidth) / 2f + (themeConfig.gridLayout.offsetX * width)
-        val startY = topPadding + (availableHeight - totalGridHeight) / 2f + (themeConfig.gridLayout.offsetY * height)
+
+        // Dynamic text Y — always anchored near the bottom
+        val textYPosition = height * 0.92f
+
+        // Centre the grid, then apply the user's offset shift
+        val startX = width  * (0.5f + layout.offsetX) - gridWidth  / 2f
+        val startY = height * (0.5f + layout.offsetY) - gridHeight / 2f
 
         val paint = Paint().apply {
             isAntiAlias = true              // Smooth edges

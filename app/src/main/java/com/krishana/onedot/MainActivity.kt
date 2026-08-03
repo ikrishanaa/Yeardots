@@ -109,7 +109,8 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
             val dotShape = repository.getDotShape()
             val dotDensity = repository.getDotDensity()
             
-            val gridScale = repository.getGridScale()
+            val gridWidthFraction  = repository.getGridWidthFraction()
+            val gridHeightFraction = repository.getGridHeightFraction()
             val gridOffsetX = repository.getGridOffsetX()
             val gridOffsetY = repository.getGridOffsetY()
             
@@ -122,7 +123,7 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
                 backgroundColor = backgroundColor,
                 dotShape = dotShape,
                 dotDensity = dotDensity,
-                gridLayout = WallpaperGenerator.GridLayout(gridScale, gridOffsetX, gridOffsetY)
+                gridLayout = WallpaperGenerator.GridLayout(gridWidthFraction, gridHeightFraction, gridOffsetX, gridOffsetY)
             )
             
             // Generate bitmap
@@ -310,7 +311,8 @@ fun SettingsScreen() {
     val savedBackgroundColor by repository.backgroundColorFlow.collectAsState(initial = SettingsRepository.DEFAULT_BACKGROUND_COLOR)
     val savedDotShape by repository.dotShapeFlow.collectAsState(initial = SettingsRepository.DEFAULT_DOT_SHAPE)
     val savedDotDensity by repository.dotDensityFlow.collectAsState(initial = SettingsRepository.DEFAULT_DOT_DENSITY)
-    val savedGridScale by repository.gridScaleFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_SCALE)
+    val savedGridWidthFraction  by repository.gridWidthFractionFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_WIDTH_FRACTION)
+    val savedGridHeightFraction by repository.gridHeightFractionFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_HEIGHT_FRACTION)
     val savedGridOffsetX by repository.gridOffsetXFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_OFFSET_X)
     val savedGridOffsetY by repository.gridOffsetYFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_OFFSET_Y)
 
@@ -321,7 +323,8 @@ fun SettingsScreen() {
     var pendingBackgroundColor by remember { mutableStateOf<Int?>(null) }
     var pendingDotShape by remember { mutableStateOf<String?>(null) }
     var pendingDotDensity by remember { mutableStateOf<Int?>(null) }
-    var pendingGridScale by remember { mutableStateOf<Float?>(null) }
+    var pendingGridWidthFraction  by remember { mutableStateOf<Float?>(null) }
+    var pendingGridHeightFraction by remember { mutableStateOf<Float?>(null) }
     var pendingGridOffsetX by remember { mutableStateOf<Float?>(null) }
     var pendingGridOffsetY by remember { mutableStateOf<Float?>(null) }
 
@@ -341,7 +344,8 @@ fun SettingsScreen() {
     val currentBackgroundColor = pendingBackgroundColor ?: savedBackgroundColor
     val currentDotShape = pendingDotShape ?: savedDotShape
     val currentDotDensity = pendingDotDensity ?: savedDotDensity
-    val currentGridScale = pendingGridScale ?: savedGridScale
+    val currentGridWidthFraction  = pendingGridWidthFraction  ?: savedGridWidthFraction
+    val currentGridHeightFraction = pendingGridHeightFraction ?: savedGridHeightFraction
     val currentGridOffsetX = pendingGridOffsetX ?: savedGridOffsetX
     val currentGridOffsetY = pendingGridOffsetY ?: savedGridOffsetY
 
@@ -352,7 +356,8 @@ fun SettingsScreen() {
                      pendingBackgroundColor != null ||
                      pendingDotShape != null ||
                      pendingDotDensity != null ||
-                     pendingGridScale != null ||
+                     pendingGridWidthFraction  != null ||
+                     pendingGridHeightFraction != null ||
                      pendingGridOffsetX != null ||
                      pendingGridOffsetY != null
 
@@ -361,7 +366,8 @@ fun SettingsScreen() {
 
     if (showLayoutEditor) {
         com.krishana.onedot.ui.components.LayoutEditorScreen(
-            initialScale = currentGridScale,
+            initialWidthFraction  = currentGridWidthFraction,
+            initialHeightFraction = currentGridHeightFraction,
             initialOffsetX = currentGridOffsetX,
             initialOffsetY = currentGridOffsetY,
             pastColor = Color(currentPastColor),
@@ -371,8 +377,9 @@ fun SettingsScreen() {
             dotShape = currentDotShape,
             dotDensity = currentDotDensity,
             onDismiss = { showLayoutEditor = false },
-            onSave = { scale, offsetX, offsetY ->
-                pendingGridScale = scale
+            onSave = { wf, hf, offsetX, offsetY ->
+                pendingGridWidthFraction  = wf
+                pendingGridHeightFraction = hf
                 pendingGridOffsetX = offsetX
                 pendingGridOffsetY = offsetY
                 showLayoutEditor = false
@@ -860,9 +867,11 @@ fun SettingsScreen() {
                                 pendingDotShape?.let { repository.updateDotShape(it) }
                                 pendingDotDensity?.let { repository.updateDotDensity(it) }
                                 
-                                if (pendingGridScale != null || pendingGridOffsetX != null || pendingGridOffsetY != null) {
+                                if (pendingGridWidthFraction != null || pendingGridHeightFraction != null ||
+                                    pendingGridOffsetX != null || pendingGridOffsetY != null) {
                                     repository.updateGridLayout(
-                                        pendingGridScale ?: savedGridScale,
+                                        pendingGridWidthFraction  ?: savedGridWidthFraction,
+                                        pendingGridHeightFraction ?: savedGridHeightFraction,
                                         pendingGridOffsetX ?: savedGridOffsetX,
                                         pendingGridOffsetY ?: savedGridOffsetY
                                     )
@@ -878,7 +887,8 @@ fun SettingsScreen() {
                                 pendingBackgroundColor = null
                                 pendingDotShape = null
                                 pendingDotDensity = null
-                                pendingGridScale = null
+                                pendingGridWidthFraction  = null
+                                pendingGridHeightFraction = null
                                 pendingGridOffsetX = null
                                 pendingGridOffsetY = null
                                 

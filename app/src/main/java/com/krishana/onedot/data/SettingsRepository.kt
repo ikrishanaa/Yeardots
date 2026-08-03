@@ -27,7 +27,9 @@ class SettingsRepository(private val context: Context) {
         val DOT_DENSITY_KEY = intPreferencesKey("dot_density")
         val LAST_UPDATE_KEY = longPreferencesKey("last_update_timestamp")
         
-        val GRID_SCALE_KEY = androidx.datastore.preferences.core.floatPreferencesKey("grid_scale")
+        // Grid layout keys — width/height fractions replace the old uniform scale
+        val GRID_WIDTH_FRACTION_KEY  = androidx.datastore.preferences.core.floatPreferencesKey("grid_width_fraction")
+        val GRID_HEIGHT_FRACTION_KEY = androidx.datastore.preferences.core.floatPreferencesKey("grid_height_fraction")
         val GRID_OFFSET_X_KEY = androidx.datastore.preferences.core.floatPreferencesKey("grid_offset_x")
         val GRID_OFFSET_Y_KEY = androidx.datastore.preferences.core.floatPreferencesKey("grid_offset_y")
 
@@ -38,7 +40,9 @@ class SettingsRepository(private val context: Context) {
         const val DEFAULT_BACKGROUND_COLOR = 0xFF050505.toInt() // Almost Black
         const val DEFAULT_DOT_SHAPE = "dot"
         const val DEFAULT_DOT_DENSITY = 1 // 0=Tiny, 1=Small, 2=Medium, 3=Large
-        const val DEFAULT_GRID_SCALE = 1.0f
+        // Grid defaults: 84% wide, 55% tall, centred
+        const val DEFAULT_GRID_WIDTH_FRACTION  = 0.84f
+        const val DEFAULT_GRID_HEIGHT_FRACTION = 0.55f
         const val DEFAULT_GRID_OFFSET_X = 0f
         const val DEFAULT_GRID_OFFSET_Y = 0f
     }
@@ -71,8 +75,12 @@ class SettingsRepository(private val context: Context) {
         preferences[LAST_UPDATE_KEY] ?: 0L
     }
 
-    val gridScaleFlow: Flow<Float> = context.dataStore.data.map { preferences ->
-        preferences[GRID_SCALE_KEY] ?: DEFAULT_GRID_SCALE
+    val gridWidthFractionFlow: Flow<Float> = context.dataStore.data.map { preferences ->
+        preferences[GRID_WIDTH_FRACTION_KEY] ?: DEFAULT_GRID_WIDTH_FRACTION
+    }
+
+    val gridHeightFractionFlow: Flow<Float> = context.dataStore.data.map { preferences ->
+        preferences[GRID_HEIGHT_FRACTION_KEY] ?: DEFAULT_GRID_HEIGHT_FRACTION
     }
 
     val gridOffsetXFlow: Flow<Float> = context.dataStore.data.map { preferences ->
@@ -125,9 +133,10 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
-    suspend fun updateGridLayout(scale: Float, offsetX: Float, offsetY: Float) {
+    suspend fun updateGridLayout(widthFraction: Float, heightFraction: Float, offsetX: Float, offsetY: Float) {
         context.dataStore.edit { preferences ->
-            preferences[GRID_SCALE_KEY] = scale
+            preferences[GRID_WIDTH_FRACTION_KEY]  = widthFraction
+            preferences[GRID_HEIGHT_FRACTION_KEY] = heightFraction
             preferences[GRID_OFFSET_X_KEY] = offsetX
             preferences[GRID_OFFSET_Y_KEY] = offsetY
         }
@@ -170,8 +179,12 @@ class SettingsRepository(private val context: Context) {
         return context.dataStore.data.first()[DOT_DENSITY_KEY] ?: DEFAULT_DOT_DENSITY
     }
 
-    suspend fun getGridScale(): Float {
-        return context.dataStore.data.first()[GRID_SCALE_KEY] ?: DEFAULT_GRID_SCALE
+    suspend fun getGridWidthFraction(): Float {
+        return context.dataStore.data.first()[GRID_WIDTH_FRACTION_KEY] ?: DEFAULT_GRID_WIDTH_FRACTION
+    }
+
+    suspend fun getGridHeightFraction(): Float {
+        return context.dataStore.data.first()[GRID_HEIGHT_FRACTION_KEY] ?: DEFAULT_GRID_HEIGHT_FRACTION
     }
 
     suspend fun getGridOffsetX(): Float {
