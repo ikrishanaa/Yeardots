@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple calendar systems (lunar, ISO week-based)
 - Milestone markers for important dates
 
+## [1.31.0] - 2026-08-04
+
+### Added
+- Pro Grid Layout Editor: Interactive 8-handle resizing for precise wallpaper alignment.
+- Dynamic Responsive Grid: Dots now automatically scale and reshape via aspect ratio algorithms to maintain square cells.
+- Centre-Horizontal alignment button for exact mid-screen centering.
+
+### Fixed
+- Added status bar padding in the editor to prevent overlapping with system icons.
+- Cleaned up professional documentation in the repository.
+
 ## [1.30.4] - 2026-02-01
 
 ### Fixed

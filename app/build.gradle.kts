@@ -11,8 +11,8 @@ android {
         applicationId = "com.krishana.onedot"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.30.4"
+        versionCode = 6
+        versionName = "1.31.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
