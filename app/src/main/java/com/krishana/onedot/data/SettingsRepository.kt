@@ -26,6 +26,10 @@ class SettingsRepository(private val context: Context) {
         val DOT_SHAPE_KEY = androidx.datastore.preferences.core.stringPreferencesKey("dot_shape")
         val DOT_DENSITY_KEY = intPreferencesKey("dot_density")
         val LAST_UPDATE_KEY = longPreferencesKey("last_update_timestamp")
+        
+        val GRID_SCALE_KEY = androidx.datastore.preferences.core.floatPreferencesKey("grid_scale")
+        val GRID_OFFSET_X_KEY = androidx.datastore.preferences.core.floatPreferencesKey("grid_offset_x")
+        val GRID_OFFSET_Y_KEY = androidx.datastore.preferences.core.floatPreferencesKey("grid_offset_y")
 
         // Default colors (Updated to match requested UI)
         const val DEFAULT_PAST_COLOR = 0xFFD1D5DB.toInt()      // Light Gray
@@ -34,6 +38,9 @@ class SettingsRepository(private val context: Context) {
         const val DEFAULT_BACKGROUND_COLOR = 0xFF050505.toInt() // Almost Black
         const val DEFAULT_DOT_SHAPE = "dot"
         const val DEFAULT_DOT_DENSITY = 1 // 0=Tiny, 1=Small, 2=Medium, 3=Large
+        const val DEFAULT_GRID_SCALE = 1.0f
+        const val DEFAULT_GRID_OFFSET_X = 0f
+        const val DEFAULT_GRID_OFFSET_Y = 0f
     }
 
     val pastColorFlow: Flow<Int> = context.dataStore.data.map { preferences ->
@@ -62,6 +69,18 @@ class SettingsRepository(private val context: Context) {
 
     val lastUpdateFlow: Flow<Long> = context.dataStore.data.map { preferences ->
         preferences[LAST_UPDATE_KEY] ?: 0L
+    }
+
+    val gridScaleFlow: Flow<Float> = context.dataStore.data.map { preferences ->
+        preferences[GRID_SCALE_KEY] ?: DEFAULT_GRID_SCALE
+    }
+
+    val gridOffsetXFlow: Flow<Float> = context.dataStore.data.map { preferences ->
+        preferences[GRID_OFFSET_X_KEY] ?: DEFAULT_GRID_OFFSET_X
+    }
+
+    val gridOffsetYFlow: Flow<Float> = context.dataStore.data.map { preferences ->
+        preferences[GRID_OFFSET_Y_KEY] ?: DEFAULT_GRID_OFFSET_Y
     }
 
     suspend fun updatePastColor(color: Int) {
@@ -106,6 +125,14 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun updateGridLayout(scale: Float, offsetX: Float, offsetY: Float) {
+        context.dataStore.edit { preferences ->
+            preferences[GRID_SCALE_KEY] = scale
+            preferences[GRID_OFFSET_X_KEY] = offsetX
+            preferences[GRID_OFFSET_Y_KEY] = offsetY
+        }
+    }
+
     suspend fun getAllColors(): Map<String, Int> {
         val preferences = context.dataStore.data.first()
         return mapOf(
@@ -141,5 +168,17 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun getDotDensity(): Int {
         return context.dataStore.data.first()[DOT_DENSITY_KEY] ?: DEFAULT_DOT_DENSITY
+    }
+
+    suspend fun getGridScale(): Float {
+        return context.dataStore.data.first()[GRID_SCALE_KEY] ?: DEFAULT_GRID_SCALE
+    }
+
+    suspend fun getGridOffsetX(): Float {
+        return context.dataStore.data.first()[GRID_OFFSET_X_KEY] ?: DEFAULT_GRID_OFFSET_X
+    }
+
+    suspend fun getGridOffsetY(): Float {
+        return context.dataStore.data.first()[GRID_OFFSET_Y_KEY] ?: DEFAULT_GRID_OFFSET_Y
     }
 }

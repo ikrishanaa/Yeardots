@@ -109,6 +109,10 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
             val dotShape = repository.getDotShape()
             val dotDensity = repository.getDotDensity()
             
+            val gridScale = repository.getGridScale()
+            val gridOffsetX = repository.getGridOffsetX()
+            val gridOffsetY = repository.getGridOffsetY()
+            
             android.util.Log.d("YearDots", "Colors - Past: 0x${pastColor.toString(16)}, Today: 0x${todayColor.toString(16)}, Future: 0x${futureColor.toString(16)}, BG: 0x${backgroundColor.toString(16)}, Shape: $dotShape, Density: $dotDensity")
             
             val themeConfig = WallpaperGenerator.ThemeConfig(
@@ -117,7 +121,8 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
                 futureColor = futureColor,
                 backgroundColor = backgroundColor,
                 dotShape = dotShape,
-                dotDensity = dotDensity
+                dotDensity = dotDensity,
+                gridLayout = WallpaperGenerator.GridLayout(gridScale, gridOffsetX, gridOffsetY)
             )
             
             // Generate bitmap
@@ -305,6 +310,9 @@ fun SettingsScreen() {
     val savedBackgroundColor by repository.backgroundColorFlow.collectAsState(initial = SettingsRepository.DEFAULT_BACKGROUND_COLOR)
     val savedDotShape by repository.dotShapeFlow.collectAsState(initial = SettingsRepository.DEFAULT_DOT_SHAPE)
     val savedDotDensity by repository.dotDensityFlow.collectAsState(initial = SettingsRepository.DEFAULT_DOT_DENSITY)
+    val savedGridScale by repository.gridScaleFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_SCALE)
+    val savedGridOffsetX by repository.gridOffsetXFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_OFFSET_X)
+    val savedGridOffsetY by repository.gridOffsetYFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_OFFSET_Y)
 
     // Pending colors (not saved yet)
     var pendingPastColor by remember { mutableStateOf<Int?>(null) }
@@ -313,6 +321,9 @@ fun SettingsScreen() {
     var pendingBackgroundColor by remember { mutableStateOf<Int?>(null) }
     var pendingDotShape by remember { mutableStateOf<String?>(null) }
     var pendingDotDensity by remember { mutableStateOf<Int?>(null) }
+    var pendingGridScale by remember { mutableStateOf<Float?>(null) }
+    var pendingGridOffsetX by remember { mutableStateOf<Float?>(null) }
+    var pendingGridOffsetY by remember { mutableStateOf<Float?>(null) }
 
     // Color picker dialogs
     var showPastColorPicker by remember { mutableStateOf(false) }
@@ -330,6 +341,9 @@ fun SettingsScreen() {
     val currentBackgroundColor = pendingBackgroundColor ?: savedBackgroundColor
     val currentDotShape = pendingDotShape ?: savedDotShape
     val currentDotDensity = pendingDotDensity ?: savedDotDensity
+    val currentGridScale = pendingGridScale ?: savedGridScale
+    val currentGridOffsetX = pendingGridOffsetX ?: savedGridOffsetX
+    val currentGridOffsetY = pendingGridOffsetY ?: savedGridOffsetY
 
     // Check if there are unsaved changes
     val hasChanges = pendingPastColor != null || 
@@ -337,9 +351,35 @@ fun SettingsScreen() {
                      pendingFutureColor != null || 
                      pendingBackgroundColor != null ||
                      pendingDotShape != null ||
-                     pendingDotDensity != null
+                     pendingDotDensity != null ||
+                     pendingGridScale != null ||
+                     pendingGridOffsetX != null ||
+                     pendingGridOffsetY != null
 
     var showAboutDialog by remember { mutableStateOf(false) }
+    var showLayoutEditor by remember { mutableStateOf(false) }
+
+    if (showLayoutEditor) {
+        com.krishana.onedot.ui.components.LayoutEditorScreen(
+            initialScale = currentGridScale,
+            initialOffsetX = currentGridOffsetX,
+            initialOffsetY = currentGridOffsetY,
+            pastColor = Color(currentPastColor),
+            todayColor = Color(currentTodayColor),
+            futureColor = Color(currentFutureColor),
+            backgroundColor = Color(currentBackgroundColor),
+            dotShape = currentDotShape,
+            dotDensity = currentDotDensity,
+            onDismiss = { showLayoutEditor = false },
+            onSave = { scale, offsetX, offsetY ->
+                pendingGridScale = scale
+                pendingGridOffsetX = offsetX
+                pendingGridOffsetY = offsetY
+                showLayoutEditor = false
+            }
+        )
+        return
+    }
 
     Column(
         modifier = Modifier
@@ -414,7 +454,8 @@ fun SettingsScreen() {
                         .padding(horizontal = 12.dp, vertical = 0.dp)
                         .aspectRatio(1f)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color(currentBackgroundColor)),
+                        .background(Color(currentBackgroundColor))
+                        .clickable { showLayoutEditor = true },
                     contentAlignment = Alignment.Center
                 ) {
                     WallpaperPreview(
@@ -427,6 +468,14 @@ fun SettingsScreen() {
                     )
                 }
                 
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = { showLayoutEditor = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth()
+                ) {
+                    Text("Edit Lock Screen Layout")
+                }
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
@@ -811,6 +860,14 @@ fun SettingsScreen() {
                                 pendingDotShape?.let { repository.updateDotShape(it) }
                                 pendingDotDensity?.let { repository.updateDotDensity(it) }
                                 
+                                if (pendingGridScale != null || pendingGridOffsetX != null || pendingGridOffsetY != null) {
+                                    repository.updateGridLayout(
+                                        pendingGridScale ?: savedGridScale,
+                                        pendingGridOffsetX ?: savedGridOffsetX,
+                                        pendingGridOffsetY ?: savedGridOffsetY
+                                    )
+                                }
+                                
                                 // Apply wallpaper immediately (synchronous)
                                 applyWallpaperNow(context, repository)
                                 
@@ -821,6 +878,9 @@ fun SettingsScreen() {
                                 pendingBackgroundColor = null
                                 pendingDotShape = null
                                 pendingDotDensity = null
+                                pendingGridScale = null
+                                pendingGridOffsetX = null
+                                pendingGridOffsetY = null
                                 
                                 showSaveDialog = false
                                 

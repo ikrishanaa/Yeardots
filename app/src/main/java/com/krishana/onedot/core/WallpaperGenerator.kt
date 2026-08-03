@@ -13,13 +13,20 @@ import kotlin.math.min
  */
 object WallpaperGenerator {
 
+    data class GridLayout(
+        val scale: Float = 1.0f,
+        val offsetX: Float = 0f,
+        val offsetY: Float = 0f
+    )
+
     data class ThemeConfig(
         val pastColor: Int,
         val todayColor: Int,
         val futureColor: Int,
         val backgroundColor: Int,
         val dotShape: String = "dot", // "dot", "square", "rounded", "pill"
-        val dotDensity: Int = 1 // 0=Tiny, 1=Small, 2=Medium, 3=Large
+        val dotDensity: Int = 1, // 0=Tiny, 1=Small, 2=Medium, 3=Large
+        val gridLayout: GridLayout = GridLayout()
     )
 
 
@@ -72,12 +79,13 @@ object WallpaperGenerator {
         // Calculate cell height to fit all rows
         val cellHeight = availableHeight / rows
         
-        // Use the smaller dimension to ensure everything fits
-        val cellSize = min(cellWidth, cellHeight)
+        // Use the smaller dimension to ensure everything fits, then apply user scale
+        val baseCellSize = min(cellWidth, cellHeight)
+        val cellSize = baseCellSize * themeConfig.gridLayout.scale
 
-        // Calculate dynamic text Y position based on grid dimensions
-        // Position text below the grid with appropriate spacing
-        val textYPosition = topPadding + (cellSize * rows) + (height * 0.05f)
+        // Calculate dynamic text Y position based on screen dimensions
+        // Position text near the bottom regardless of grid size/position
+        val textYPosition = height * 0.92f
         
         // Apply density multiplier based on user preference
         // Tiny=0.70x, Small=1.00x, Medium=1.30x, Large=1.60x
@@ -98,9 +106,9 @@ object WallpaperGenerator {
         val totalGridWidth = cellSize * columns
         val totalGridHeight = cellSize * rows
         
-        // Center the grid
-        val startX = (width - totalGridWidth) / 2f
-        val startY = topPadding + (availableHeight - totalGridHeight) / 2f
+        // Center the grid and apply normalized offsets
+        val startX = (width - totalGridWidth) / 2f + (themeConfig.gridLayout.offsetX * width)
+        val startY = topPadding + (availableHeight - totalGridHeight) / 2f + (themeConfig.gridLayout.offsetY * height)
 
         val paint = Paint().apply {
             isAntiAlias = true              // Smooth edges

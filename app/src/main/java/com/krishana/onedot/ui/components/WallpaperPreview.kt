@@ -27,7 +27,7 @@ fun WallpaperPreview(
     // Use same grid layout as actual wallpaper (15 columns)
     // Show partial grid that represents the full layout better
     val columns = 15
-    val rows = 15 // Keep preview manageable but representative
+    val rows = 25 // 365 / 15 = 24.3, so 25 rows to match actual grid aspect ratio
     val totalDots = columns * rows
     
     // Calculate dot size based on density - matching generator multipliers
@@ -57,7 +57,7 @@ fun WallpaperPreview(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
+            .aspectRatio(15f / 25f)
             .background(backgroundColor, MaterialTheme.shapes.medium)
             .padding(16.dp)
     ) {
@@ -65,7 +65,7 @@ fun WallpaperPreview(
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxSize()
         ) {
-            repeat(15) { row ->
+            repeat(25) { row ->
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     modifier = Modifier
