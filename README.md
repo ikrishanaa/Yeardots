@@ -18,7 +18,7 @@
 
 ---
 
-## 📖 About Yeardots
+## About Yeardots
 
 **Yeardots** is a minimalist **life calendar** and **productivity wallpaper** for Android that visualizes your year as a 365-dot grid. It transforms your home screen into a daily reminder of time's passage (Memento Mori), helping you beat procrastination and live more intentionally.
 
@@ -28,27 +28,27 @@ Designed for fans of **Stoicism**, **digital minimalism**, and quantifiable self
 
 ---
 
-## ✨ Features
+## Features
 
 ### Core Functionality
-- 🗓️ **365-Dot Calendar Grid** - Visual representation of the entire year
-- 🔄 **Automatic Daily Updates** - Wallpaper refreshes at midnight using WorkManager
-- 🎨 **Fully Customizable Colors** - Choose colors for past, present, future, and background
-- 🔲 **Four Dot Shapes** - Circle, Rounded Square, Square, and Pill
-- 📏 **Four Size Options** - Tiny, Small, Medium, and Large dot densities
-- 📐 **Pro Grid Editor** - Fully responsive 8-handle layout editor to perfectly align dots around your lock screen clock
-- 📱 **OEM Clock Presets** - Built-in lock screen clock guides (Small, Medium, Large, XL) for precise visual placement
-- 👁️ **Live Preview** - See changes in real-time before applying
+- **365-Dot Calendar Grid** - Visual representation of the entire year
+- **Automatic Daily Updates** - Wallpaper refreshes at midnight using WorkManager
+- **Fully Customizable Colors** - Choose colors for past, present, future, and background
+- **Four Dot Shapes** - Circle, Rounded Square, Square, and Pill
+- **Four Size Options** - Tiny, Small, Medium, and Large dot densities
+- **Pro Grid Editor** - Fully responsive 8-handle layout editor to perfectly align dots around your lock screen clock
+- **OEM Clock Presets** - Built-in lock screen clock guides (Small, Medium, Large, XL) for precise visual placement
+- **Live Preview** - See changes in real-time before applying
 
 ### Privacy & Performance
-- 🔒 **100% Offline** - No internet permission, no tracking, zero ads
-- 🔋 **Battery Efficient** - Optimized background tasks with minimal battery impact
-- 🌙 **AMOLED-Friendly** - Dark backgrounds conserve battery on modern displays
-- 🚫 **No Data Collection** - Your privacy is guaranteed
+- **100% Offline** - No internet permission, no tracking, zero ads
+- **Battery Efficient** - Optimized background tasks with minimal battery impact
+- **AMOLED-Friendly** - Dark backgrounds conserve battery on modern displays
+- **No Data Collection** - Your privacy is guaranteed
 
 ---
 
-## 📱 Screenshots
+## Screenshots
 
 <p align="center">
   <img src="screenshots/Screenshot_01.jpg" width="30%" />
@@ -64,7 +64,7 @@ Designed for fans of **Stoicism**, **digital minimalism**, and quantifiable self
 
 ---
 
-## 📥 Installation
+## Installation
 
 ### Option 1: Download APK (Recommended)
 1. Go to [Releases](https://github.com/ikrishanaa/Yeardots/releases)
@@ -84,7 +84,7 @@ cd year-dots
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 1. **Install the app** using one of the methods above
 2. **Open Year Dots** and configure your preferred colors
@@ -99,7 +99,7 @@ cd year-dots
 
 ---
 
-## 🛠️ Technical Stack
+## Technical Stack
 
 | Component | Technology |
 |-----------|-----------|
@@ -117,7 +117,7 @@ cd year-dots
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 app/
@@ -139,7 +139,7 @@ app/
 
 ---
 
-## 🎯 How It Works
+## How It Works
 
 ```mermaid
 graph TD
@@ -169,7 +169,7 @@ graph TD
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on:
 - Reporting bugs
@@ -179,7 +179,7 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for de
 
 ---
 
-## 🐛 Found a Bug?
+## Found a Bug?
 
 Please check [existing issues](https://github.com/ikrishanaa/Yeardots/issues) first. If your bug hasn't been reported:
 1. Open a [new issue](https://github.com/ikrishanaa/Yeardots/issues/new/choose)
@@ -189,7 +189,7 @@ Please check [existing issues](https://github.com/ikrishanaa/Yeardots/issues) fi
 
 ---
 
-## 📋 Roadmap
+## Roadmap
 
 ### v1.1 (Planned)
 - [ ] Widget support for home screen
@@ -206,7 +206,7 @@ See [open issues](https://github.com/ikrishanaa/Yeardots/issues) for feature dis
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
@@ -214,7 +214,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 **Inspiration:**
 - [4,000 Weeks: Time Management for Mortals](https://www.oliverburkeman.com/books) by Oliver Burkeman
@@ -229,19 +229,19 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Krishana**  
 *Year Dots v1.0 - January 2026*
 
-- 🐛 Report bugs: [GitHub Issues](https://github.com/ikrishanaa/Yeardots/issues)
-- 💡 Suggest features: [Feature Requests](https://github.com/ikrishanaa/Yeardots/issues/new/choose)
-- 📧 Email: krishanaindia773@gmail.com
-- 💬 Telegram: [t.me/yeardots](https://t.me/yeardots)
+- Report bugs: [GitHub Issues](https://github.com/ikrishanaa/Yeardots/issues)
+- Suggest features: [Feature Requests](https://github.com/ikrishanaa/Yeardots/issues/new/choose)
+- Email: krishanaindia773@gmail.com
+- Telegram: [t.me/yeardots](https://t.me/yeardots)
 
 ---
 
-## 📊 Stats
+## Stats
 
 <p align="center">
   <img src="https://img.shields.io/github/stars/ikrishanaa/Yeardots?style=social" alt="Stars">
@@ -252,7 +252,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 <p align="center">
-  <sub>Made with ❤️ and ⏰ awareness</sub>
+  <sub>Made with care and awareness</sub>
 </p>
 
 <p align="center">
