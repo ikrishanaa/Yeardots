@@ -280,7 +280,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
                                 }
                                 SocialFilledTonalButton(icon = Icons.Default.Person) {
                                     try {
-                                        uriHandler.openUri("https://ikrishnaa.dev/")
+                                        uriHandler.openUri("https://ikrishanaa.dev")
                                     } catch (e: Exception) {}
                                 }
                                 SocialFilledTonalButton(icon = ImageVector.vectorResource(id = com.krishana.onedot.R.drawable.ic_instagram)) {
