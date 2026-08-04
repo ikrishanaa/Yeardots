@@ -24,7 +24,7 @@ class WallpaperWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
             val repository = SettingsRepository(applicationContext)
-            
+
             // Get current colors from DataStore
             val pastColor = repository.pastColorFlow.first()
             val todayColor = repository.todayColorFlow.first()
@@ -32,6 +32,10 @@ class WallpaperWorker(
             val backgroundColor = repository.backgroundColorFlow.first()
             val dotShape = repository.dotShapeFlow.first()
             val dotDensity = repository.dotDensityFlow.first()
+            val gridWidthFraction = repository.gridWidthFractionFlow.first()
+            val gridHeightFraction = repository.gridHeightFractionFlow.first()
+            val gridOffsetX = repository.gridOffsetXFlow.first()
+            val gridOffsetY = repository.gridOffsetYFlow.first()
 
             val themeConfig = WallpaperGenerator.ThemeConfig(
                 pastColor = pastColor,
@@ -39,7 +43,8 @@ class WallpaperWorker(
                 futureColor = futureColor,
                 backgroundColor = backgroundColor,
                 dotShape = dotShape,
-                dotDensity = dotDensity
+                dotDensity = dotDensity,
+                gridLayout = WallpaperGenerator.GridLayout(gridWidthFraction, gridHeightFraction, gridOffsetX, gridOffsetY)
             )
 
             // Get device screen dimensions
@@ -65,17 +70,17 @@ class WallpaperWorker(
             // setBitmap() compresses the image, causing low quality
             // setStream() with PNG maintains original quality
             val stream = java.io.ByteArrayOutputStream()
-            
+
             try {
                 // Compress with PNG (lossless) at maximum quality
                 bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
                 val inputStream = java.io.ByteArrayInputStream(stream.toByteArray())
-                
+
                 try {
                     // Set quality hints for wallpaper manager
                     // These hints ensure Android doesn't downscale or compress further
                     wallpaperManager.suggestDesiredDimensions(width, height)
-                    
+
                     // Set wallpaper ONLY on LOCK SCREEN with maximum quality settings
                     // allowBackup=true, which=FLAG_LOCK for lock screen only
                     wallpaperManager.setStream(inputStream, null, true, WallpaperManager.FLAG_LOCK)

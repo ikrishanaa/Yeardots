@@ -18,20 +18,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.TrackChanges
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,8 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,7 +48,6 @@ import com.krishana.onedot.ui.components.ColorSettingRow
 import com.krishana.onedot.ui.components.DebugInfoRow
 import com.krishana.onedot.ui.components.ImprovedColorPickerDialog
 import com.krishana.onedot.ui.components.ShapeOptionItem
-import com.krishana.onedot.ui.components.WallpaperPreview
 import com.krishana.onedot.ui.theme.OneDotTheme
 import com.krishana.onedot.util.WorkScheduler
 import kotlinx.coroutines.Dispatchers
@@ -255,66 +248,62 @@ fun SettingsScreen() {
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .border(
+                        width = 1.dp, 
+                        color = Color.White.copy(alpha = 0.15f), 
+                        shape = RoundedCornerShape(24.dp)
+                    ),
+                containerColor = Color(0xFF1E1E1E).copy(alpha = 0.6f),
+                tonalElevation = 0.dp,
             ) {
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Visibility, contentDescription = null) },
-                    label = { Text("Preview") },
+                    icon = { Icon(Icons.Default.GridView, contentDescription = null) },
+                    label = { Text("Layout") },
                     selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 }
+                    onClick = { selectedTab = 0 },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.White.copy(alpha = 0.15f),
+                        selectedIconColor = Color.White,
+                        selectedTextColor = Color.White,
+                        unselectedIconColor = Color.White.copy(alpha = 0.6f),
+                        unselectedTextColor = Color.White.copy(alpha = 0.6f)
+                    )
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Palette, contentDescription = null) },
                     label = { Text("Customize") },
                     selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 }
+                    onClick = { selectedTab = 1 },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.White.copy(alpha = 0.15f),
+                        selectedIconColor = Color.White,
+                        selectedTextColor = Color.White,
+                        unselectedIconColor = Color.White.copy(alpha = 0.6f),
+                        unselectedTextColor = Color.White.copy(alpha = 0.6f)
+                    )
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.GridView, contentDescription = null) },
-                    label = { Text("Layout") },
+                    icon = { Icon(Icons.Default.TrackChanges, contentDescription = null) },
+                    label = { Text("Goal") },
                     selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 }
+                    onClick = { selectedTab = 2 },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.White.copy(alpha = 0.15f),
+                        selectedIconColor = Color.White,
+                        selectedTextColor = Color.White,
+                        unselectedIconColor = Color.White.copy(alpha = 0.6f),
+                        unselectedTextColor = Color.White.copy(alpha = 0.6f)
+                    )
                 )
             }
         }
     ) { paddingValues ->
         when (selectedTab) {
-            0 -> PreviewTab(
-                modifier = Modifier.padding(paddingValues),
-                currentPastColor = currentPastColor,
-                currentTodayColor = currentTodayColor,
-                currentFutureColor = currentFutureColor,
-                currentBackgroundColor = currentBackgroundColor,
-                currentDotShape = currentDotShape,
-                currentDotDensity = currentDotDensity,
-                currentGridWidthFraction = currentGridWidthFraction,
-                currentGridHeightFraction = currentGridHeightFraction,
-                currentGridOffsetX = currentGridOffsetX,
-                currentGridOffsetY = currentGridOffsetY,
-                hasChanges = hasChanges,
-                onAboutClick = { showAboutDialog = true },
-                onEditLayout = { selectedTab = 2 },
-                onSaveClick = { showSaveDialog = true }
-            )
-            1 -> CustomizeTab(
-                modifier = Modifier.padding(paddingValues),
-                currentPastColor = currentPastColor,
-                currentTodayColor = currentTodayColor,
-                currentFutureColor = currentFutureColor,
-                currentBackgroundColor = currentBackgroundColor,
-                currentDotShape = currentDotShape,
-                currentDotDensity = currentDotDensity,
-                hasChanges = hasChanges,
-                onPastColorClick = { showPastColorPicker = true },
-                onTodayColorClick = { showTodayColorPicker = true },
-                onFutureColorClick = { showFutureColorPicker = true },
-                onBackgroundColorClick = { showBackgroundColorPicker = true },
-                onShapeChange = { pendingDotShape = it },
-                onDensityChange = { pendingDotDensity = it },
-                onSaveClick = { showSaveDialog = true }
-            )
-            2 -> LayoutTab(
-                modifier = Modifier.padding(paddingValues),
+            0 -> LayoutTab(
+                bottomPadding = paddingValues.calculateBottomPadding(),
                 initialWidthFraction  = currentGridWidthFraction,
                 initialHeightFraction = currentGridHeightFraction,
                 initialOffsetX = currentGridOffsetX,
@@ -325,14 +314,38 @@ fun SettingsScreen() {
                 backgroundColor = Color(currentBackgroundColor),
                 dotShape = currentDotShape,
                 dotDensity = currentDotDensity,
-                onBack = { selectedTab = 0 },
+                onBack = { /* stay on layout */ },
                 onSave = { wf, hf, ox, oy ->
                     pendingGridWidthFraction = wf
                     pendingGridHeightFraction = hf
                     pendingGridOffsetX = ox
                     pendingGridOffsetY = oy
-                }
+                },
+                onApplyToLockscreen = { showSaveDialog = true }
             )
+            1 -> CustomizeTab(
+                modifier = Modifier.padding(paddingValues),
+                currentPastColor = currentPastColor,
+                currentTodayColor = currentTodayColor,
+                currentFutureColor = currentFutureColor,
+                currentBackgroundColor = currentBackgroundColor,
+                currentDotShape = currentDotShape,
+                currentDotDensity = currentDotDensity,
+                hasChanges = hasChanges,
+                pendingGridWidthFraction = pendingGridWidthFraction,
+                pendingGridHeightFraction = pendingGridHeightFraction,
+                pendingGridOffsetX = pendingGridOffsetX,
+                pendingGridOffsetY = pendingGridOffsetY,
+                onPastColorClick = { showPastColorPicker = true },
+                onTodayColorClick = { showTodayColorPicker = true },
+                onFutureColorClick = { showFutureColorPicker = true },
+                onBackgroundColorClick = { showBackgroundColorPicker = true },
+                onShapeChange = { pendingDotShape = it },
+                onDensityChange = { pendingDotDensity = it },
+                onSaveClick = { showSaveDialog = true },
+                onAboutClick = { showAboutDialog = true }
+            )
+            2 -> GoalTab(modifier = Modifier.padding(paddingValues))
         }
     }
 
@@ -417,120 +430,39 @@ fun SettingsScreen() {
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Tab 1 — Preview
+// Tab 3 — Goal (Coming Soon)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PreviewTab(
-    modifier: Modifier = Modifier,
-    currentPastColor: Int,
-    currentTodayColor: Int,
-    currentFutureColor: Int,
-    currentBackgroundColor: Int,
-    currentDotShape: String,
-    currentDotDensity: Int,
-    currentGridWidthFraction: Float,
-    currentGridHeightFraction: Float,
-    currentGridOffsetX: Float,
-    currentGridOffsetY: Float,
-    hasChanges: Boolean,
-    onAboutClick: () -> Unit,
-    onEditLayout: () -> Unit,
-    onSaveClick: () -> Unit,
-) {
-    Column(
+private fun GoalTab(modifier: Modifier = Modifier) {
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 20.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Year Dots",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                fontSize = 36.sp
+            Icon(
+                imageVector = Icons.Default.TrackChanges,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                modifier = Modifier.size(64.dp)
             )
-            IconButton(
-                onClick = onAboutClick,
-                modifier = Modifier.size(40.dp).clip(CircleShape)
-            ) {
-                Icon(Icons.Default.Info, contentDescription = "About", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
-            }
+            Text(
+                text = "Goals",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                text = "Coming Soon",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-
-        // Preview Card
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
-        ) {
-            Column(modifier = Modifier.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "PREVIEW",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(vertical = 20.dp)
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .clickable(onClick = onEditLayout)
-                ) {
-                    WallpaperPreview(
-                        modifier = Modifier.fillMaxWidth(),
-                        pastColor = Color(currentPastColor),
-                        todayColor = Color(currentTodayColor),
-                        futureColor = Color(currentFutureColor),
-                        backgroundColor = Color(currentBackgroundColor),
-                        dotShape = currentDotShape,
-                        dotDensity = currentDotDensity,
-                        gridWidthFraction = currentGridWidthFraction,
-                        gridHeightFraction = currentGridHeightFraction,
-                        gridOffsetX = currentGridOffsetX,
-                        gridOffsetY = currentGridOffsetY
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = onEditLayout,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                    modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth()
-                ) {
-                    Text("Edit Lock Screen Layout")
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        }
-
-        // Save Button
-        if (hasChanges) {
-            Button(
-                onClick = onSaveClick,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Save & Apply to Lockscreen", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -549,6 +481,10 @@ private fun CustomizeTab(
     currentDotShape: String,
     currentDotDensity: Int,
     hasChanges: Boolean,
+    pendingGridWidthFraction: Float?,
+    pendingGridHeightFraction: Float?,
+    pendingGridOffsetX: Float?,
+    pendingGridOffsetY: Float?,
     onPastColorClick: () -> Unit,
     onTodayColorClick: () -> Unit,
     onFutureColorClick: () -> Unit,
@@ -556,6 +492,7 @@ private fun CustomizeTab(
     onShapeChange: (String) -> Unit,
     onDensityChange: (Int) -> Unit,
     onSaveClick: () -> Unit,
+    onAboutClick: () -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -563,9 +500,38 @@ private fun CustomizeTab(
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        // ── Header: app name + About icon ──────────────────────────────
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()           // clears status bar on all devices
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Yearsdots",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            IconButton(
+                onClick = onAboutClick,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            ) {
+                Icon(
+                    Icons.Default.Info,
+                    contentDescription = "About",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
 
         // ── Color Palette Card ────────────────────────────────────────────
         ElevatedCard(
@@ -667,6 +633,7 @@ private fun CustomizeTab(
                                 shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
                                 onClick = { onDensityChange(index) },
                                 selected = index == currentDotDensity,
+                                icon = {},
                                 colors = SegmentedButtonDefaults.colors(
                                     activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                     activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -684,7 +651,7 @@ private fun CustomizeTab(
 
         // Save Button
         if (hasChanges) {
-            Button(
+            FilledTonalButton(
                 onClick = onSaveClick,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
@@ -700,13 +667,13 @@ private fun CustomizeTab(
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Tab 3 — Layout
-// ═══════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════
+// Tab 1 — Layout
+// ════════════════════════════════════════════════════════════════════════════════
 
 @Composable
 private fun LayoutTab(
-    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
+    bottomPadding: androidx.compose.ui.unit.Dp,
     initialWidthFraction: Float,
     initialHeightFraction: Float,
     initialOffsetX: Float,
@@ -719,6 +686,7 @@ private fun LayoutTab(
     dotDensity: Int,
     onBack: () -> Unit,
     onSave: (widthFraction: Float, heightFraction: Float, offsetX: Float, offsetY: Float) -> Unit,
+    onApplyToLockscreen: () -> Unit,
 ) {
     com.krishana.onedot.ui.components.LayoutEditorScreen(
         initialWidthFraction  = initialWidthFraction,
@@ -732,7 +700,9 @@ private fun LayoutTab(
         dotShape = dotShape,
         dotDensity = dotDensity,
         onDismiss = onBack,
-        onSave = { wf, hf, ox, oy -> onSave(wf, hf, ox, oy); onBack() }
+        onSave = onSave,
+        onApplyToLockscreen = onApplyToLockscreen,
+        bottomPadding = bottomPadding,
     )
 }
 

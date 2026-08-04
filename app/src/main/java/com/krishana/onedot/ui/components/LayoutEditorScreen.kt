@@ -9,13 +9,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -65,6 +67,7 @@ private const val MAX_HEIGHT_F  = 0.95f
 private const val HANDLE_PX     = 44f      // logical touch target for handles (dp-ish, scaled later)
 
 // ─────────────────────────────────────────────────────────────────────────────
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LayoutEditorScreen(
     initialWidthFraction  : Float = 0.84f,
@@ -79,6 +82,8 @@ fun LayoutEditorScreen(
     dotDensity            : Int,
     onDismiss             : () -> Unit,
     onSave                : (widthFraction: Float, heightFraction: Float, offsetX: Float, offsetY: Float) -> Unit,
+    onApplyToLockscreen   : () -> Unit,
+    bottomPadding         : androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     val haptic  = LocalHapticFeedback.current
     val density = LocalDensity.current
@@ -94,6 +99,14 @@ fun LayoutEditorScreen(
     var gridT by remember { mutableStateOf(0.5f - initialHeightFraction / 2f + initialOffsetY) }
     var gridR by remember { mutableStateOf(0.5f + initialWidthFraction  / 2f + initialOffsetX) }
     var gridB by remember { mutableStateOf(0.5f + initialHeightFraction / 2f + initialOffsetY) }
+
+    // Re-sync grid when saved values change (preserves user-dragged position across recompositions)
+    LaunchedEffect(initialWidthFraction, initialHeightFraction, initialOffsetX, initialOffsetY) {
+        gridL = 0.5f - initialWidthFraction  / 2f + initialOffsetX
+        gridT = 0.5f - initialHeightFraction / 2f + initialOffsetY
+        gridR = 0.5f + initialWidthFraction  / 2f + initialOffsetX
+        gridB = 0.5f + initialHeightFraction / 2f + initialOffsetY
+    }
 
     // ── Interaction state ──────────────────────────────────────────────────
     var isDragging   by remember { mutableStateOf(false) }
@@ -537,7 +550,7 @@ fun LayoutEditorScreen(
                     )
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             ) {
-                Text("⊕ Centred", color = Color(0xFFF97316), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                Text("⊕ Centred", color = Color(0xFFF97316), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             }
         }
 
@@ -551,59 +564,61 @@ fun LayoutEditorScreen(
                         colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f))
                     )
                 )
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(top = 16.dp, bottom = bottomPadding)
+                .navigationBarsPadding(), // Ensure visible above gesture nav bar
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Clock preset chips
             Text(
                 text = "Clock Size Preview",
                 color = Color.White.copy(alpha = 0.55f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(start = 2.dp)
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(start = 22.dp) // 20dp + 2dp
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
             ) {
-                ClockPreset.entries.forEach { preset ->
+                ClockPreset.entries.forEachIndexed { index, preset ->
                     val selected = clockPreset == preset
-                    FilterChip(
+                    SegmentedButton(
                         selected = selected,
-                        onClick  = { clockPreset = preset },
-                        label    = { Text(preset.label, fontSize = 12.sp) },
-                        colors   = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor    = Color(0xFFF97316),
-                            selectedLabelColor        = Color.White,
-                            containerColor            = Color.White.copy(alpha = 0.10f),
-                            labelColor                = Color.White.copy(alpha = 0.70f)
+                        onClick = { clockPreset = preset },
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = ClockPreset.entries.size
                         ),
-                        modifier = Modifier.weight(1f)
-                    )
+                        icon = {},
+                        colors = SegmentedButtonDefaults.colors(
+                            activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            inactiveContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    ) {
+                        Text(
+                            text = preset.label,
+                            style = MaterialTheme.typography.labelMedium,
+                            maxLines = 1,
+                            softWrap = false,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
                 }
             }
 
-            // Grid size info
-            if (screenW > 0f && screenH > 0f) {
-                val wPct = ((gridR - gridL) * 100).roundToInt()
-                val hPct = ((gridB - gridT) * 100).roundToInt()
-                Text(
-                    text = "${wPct}% × ${hPct}%  ·  $derivedCols cols × $derivedRows rows",
-                    color = Color.White.copy(alpha = 0.40f),
-                    fontSize = 11.sp,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
-
-            // ── Helper buttons row: Reset & Centre-Horizontal ─────────
+            // ── Row 1: Reset · Centre · Save ─────────────────────────────────
             val isCentredH by remember { derivedStateOf { kotlin.math.abs((gridL + gridR) / 2f - 0.5f) < 0.005f } }
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Reset to defaults
+                // Reset
                 IconButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -612,115 +627,83 @@ fun LayoutEditorScreen(
                         isSnapped = true
                     },
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(44.dp)
                         .background(Color.White.copy(alpha = 0.10f), CircleShape)
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reset", tint = Color.White)
+                    Icon(Icons.Default.Refresh, contentDescription = "Reset",
+                        tint = Color.White, modifier = Modifier.size(20.dp))
                 }
 
-                // Centre horizontally — snap left edge so (gridL+gridR)/2 == 0.5
-                val centreHBg = if (isCentredH)
-                    Color(0xFFF97316).copy(alpha = 0.30f)
-                else
-                    Color.White.copy(alpha = 0.10f)
-                val centreHBorder = if (isCentredH)
-                    Color(0xFFF97316).copy(alpha = 0.80f)
-                else
-                    Color.Transparent
-
-                Box(
+                // Centre horizontally (Small Icon)
+                val centreHBg = if (isCentredH) Color(0xFFF97316).copy(alpha = 0.25f)
+                                else Color.White.copy(alpha = 0.10f)
+                IconButton(
+                    onClick = {
+                        val hw = (gridR - gridL) / 2f
+                        gridL = 0.5f - hw; gridR = 0.5f + hw
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    },
                     modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(centreHBg)
-                        .border(1.dp, centreHBorder, RoundedCornerShape(14.dp))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            val hw = (gridR - gridL) / 2f
-                            gridL = 0.5f - hw
-                            gridR = 0.5f + hw
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        },
-                    contentAlignment = Alignment.Center
+                        .size(44.dp)
+                        .background(centreHBg, CircleShape)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        // Simple ↔ icon drawn inline
-                        Canvas(modifier = Modifier.size(18.dp)) {
-                            val cy    = size.height / 2f
-                            val mid   = size.width / 2f
-                            val arrowLen = size.width * 0.32f
-                            val stroke = Stroke(width = 2.dp.toPx())
-                            val color  = if (isCentredH) Color(0xFFF97316) else Color.White
-                            // centre vertical line
-                            drawLine(color, Offset(mid, 0f), Offset(mid, size.height), strokeWidth = 2.dp.toPx())
-                            // left arrow
-                            drawLine(color, Offset(0f, cy), Offset(arrowLen, cy), strokeWidth = 2.dp.toPx())
-                            drawLine(color, Offset(0f, cy), Offset(arrowLen * 0.6f, cy - arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
-                            drawLine(color, Offset(0f, cy), Offset(arrowLen * 0.6f, cy + arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
-                            // right arrow
-                            drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen, cy), strokeWidth = 2.dp.toPx())
-                            drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen * 0.6f, cy - arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
-                            drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen * 0.6f, cy + arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
-                        }
-                        Text(
-                            text  = if (isCentredH) "Centred" else "Centre ↔",
-                            color = if (isCentredH) Color(0xFFF97316) else Color.White.copy(alpha = 0.85f),
-                            fontSize = 13.sp,
-                            fontWeight = if (isCentredH) FontWeight.SemiBold else FontWeight.Normal
-                        )
+                    Canvas(modifier = Modifier.size(16.dp)) {
+                        val cy = size.height / 2f
+                        val mid = size.width / 2f
+                        val arrowLen = size.width * 0.32f
+                        val color = if (isCentredH) Color(0xFFF97316) else Color.White
+                        drawLine(color, Offset(mid, 0f), Offset(mid, size.height), strokeWidth = 2.dp.toPx())
+                        drawLine(color, Offset(0f, cy), Offset(arrowLen, cy), strokeWidth = 2.dp.toPx())
+                        drawLine(color, Offset(0f, cy), Offset(arrowLen * 0.6f, cy - arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
+                        drawLine(color, Offset(0f, cy), Offset(arrowLen * 0.6f, cy + arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
+                        drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen, cy), strokeWidth = 2.dp.toPx())
+                        drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen * 0.6f, cy - arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
+                        drawLine(color, Offset(size.width, cy), Offset(size.width - arrowLen * 0.6f, cy + arrowLen * 0.4f), strokeWidth = 2.dp.toPx())
                     }
                 }
-            }
 
-            Spacer(Modifier.height(4.dp))
-
-            // ── Cancel + Done row ──────────────────────────────────────
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Cancel
-                OutlinedButton(
-                    onClick  = onDismiss,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    colors   = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                    border   = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
-                    shape    = RoundedCornerShape(14.dp)
-                ) {
-                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Cancel")
-                }
-
-                // Save / Done
-                Button(
+                // Apply to Lockscreen (Moved up to Row 1)
+                FilledTonalButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         clampBounds()
-                        val wf = gridR - gridL
-                        val hf = gridB - gridT
-                        val ox = (gridL + gridR) / 2f - 0.5f
-                        val oy = (gridT + gridB) / 2f - 0.5f
-                        onSave(wf, hf, ox, oy)
+                        onSave(gridR - gridL, gridB - gridT,
+                            (gridL + gridR) / 2f - 0.5f, (gridT + gridB) / 2f - 0.5f)
+                        onApplyToLockscreen()
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp),
-                    colors   = ButtonDefaults.buttonColors(containerColor = Color(0xFFF97316)),
-                    shape    = RoundedCornerShape(14.dp)
+                        .height(44.dp),
+                    shape  = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
-                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Done", fontWeight = FontWeight.SemiBold)
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        "Apply",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1
+                    )
+                }
+
+                // Save (persist, stay on screen)
+                OutlinedButton(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        clampBounds()
+                        onSave(gridR - gridL, gridB - gridT,
+                            (gridL + gridR) / 2f - 0.5f, (gridT + gridB) / 2f - 0.5f)
+                    },
+                    modifier = Modifier.height(44.dp),
+                    colors   = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                    border   = BorderStroke(1.dp, Color.White.copy(alpha = 0.30f)),
+                    shape    = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 14.dp)
+                ) {
+                    Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Save", style = MaterialTheme.typography.labelLarge)
                 }
             }
 
@@ -738,14 +721,15 @@ fun LayoutEditorScreen(
             Text(
                 text = "Edit Grid Layout",
                 color = Color.White.copy(alpha = 0.9f),
-                fontSize = 17.sp,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(Modifier.weight(1f))
+            // Unsaved indicator removed per user request
             Text(
                 text = "Drag edges · pinch corners · pan inside",
                 color = Color.White.copy(alpha = 0.35f),
-                fontSize = 10.sp
+                style = MaterialTheme.typography.labelSmall
             )
         }
     }

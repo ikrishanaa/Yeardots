@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient (Pure Black) -->
+    <linearGradient id="blackBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="100%" stop-color="#0A0A0A"/>
+    </linearGradient>
+
+    <!-- White Dot Gradient -->
+    <linearGradient id="whiteDotGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+
+    <!-- Orange Current Day Dot Gradient -->
+    <linearGradient id="orangeDotGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9800"/>
+      <stop offset="100%" stop-color="#FF5722"/>
+    </linearGradient>
+
+    <!-- Orange Glow Effect -->
+    <filter id="orangeGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="subtleShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Black Squircle Icon Base -->
+  <rect x="32" y="32" width="448" height="448" rx="105" fill="url(#blackBg)" filter="url(#subtleShadow)"/>
+  <rect x="32" y="32" width="448" height="448" rx="105" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2"/>
+
+  <!-- Centered 6x6 Grid (Coordinates: 111, 169, 227, 285, 343, 401) -->
+  <g>
+    <!-- Row 1: Completed Days (White) -->
+    <circle cx="111" cy="111" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="169" cy="111" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="227" cy="111" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="285" cy="111" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="343" cy="111" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="401" cy="111" r="16" fill="url(#whiteDotGrad)" />
+
+    <!-- Row 2: Completed Days (White) -->
+    <circle cx="111" cy="169" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="169" cy="169" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="227" cy="169" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="285" cy="169" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="343" cy="169" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="401" cy="169" r="16" fill="url(#whiteDotGrad)" />
+
+    <!-- Row 3: Progress Transition -->
+    <circle cx="111" cy="227" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="169" cy="227" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="227" cy="227" r="16" fill="url(#whiteDotGrad)" />
+    <circle cx="285" cy="227" r="16" fill="url(#whiteDotGrad)" />
+    
+    <!-- Current Day (Glowing Orange) -->
+    <circle cx="343" cy="227" r="18" fill="url(#orangeDotGrad)" filter="url(#orangeGlow)" />
+    
+    <!-- Remaining Days (Translucent White) -->
+    <circle cx="401" cy="227" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+
+    <!-- Row 4: Remaining Days -->
+    <circle cx="111" cy="285" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="169" cy="285" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="227" cy="285" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="285" cy="285" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="343" cy="285" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="401" cy="285" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+
+    <!-- Row 5: Remaining Days -->
+    <circle cx="111" cy="343" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="169" cy="343" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="227" cy="343" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="285" cy="343" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="343" cy="343" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="401" cy="343" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+
+    <!-- Row 6: Remaining Days -->
+    <circle cx="111" cy="401" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="169" cy="401" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="227" cy="401" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="285" cy="401" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="343" cy="401" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+    <circle cx="401" cy="401" r="14" fill="#FFFFFF" fill-opacity="0.2" />
+  </g>
+</svg>
