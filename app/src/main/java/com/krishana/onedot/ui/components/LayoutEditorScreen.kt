@@ -112,6 +112,16 @@ fun LayoutEditorScreen(
     var isDragging   by remember { mutableStateOf(false) }
     var isSnapped    by remember { mutableStateOf(false) }
     var clockPreset  by remember { mutableStateOf(ClockPreset.MEDIUM) }
+    
+    // ── Real-time Clock ────────────────────────────────────────────────────
+    var currentTimeText by remember { mutableStateOf("12:00") }
+    LaunchedEffect(Unit) {
+        val formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm")
+        while (true) {
+            currentTimeText = java.time.LocalTime.now().format(formatter)
+            kotlinx.coroutines.delay(1000L)
+        }
+    }
 
     // ── Responsive column/row count — reacts to live grid resize ────────
     val derivedCols by remember {
@@ -248,26 +258,27 @@ fun LayoutEditorScreen(
             val clockH = with(density) { (screenH * clockPreset.heightFrac).toDp() }
             Box(
                 modifier = Modifier
+                    .padding(top = 72.dp, start = 16.dp, end = 16.dp)
                     .fillMaxWidth()
                     .height(clockH)
                     .align(Alignment.TopCenter)
-                    .background(Color.White.copy(alpha = 0.06f))
+                    .background(Color.White.copy(alpha = 0.06f), shape = RoundedCornerShape(24.dp))
                     .border(
                         width = 1.dp,
                         color = Color.White.copy(alpha = 0.20f),
-                        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                        shape = RoundedCornerShape(24.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "12:00",
+                    text = currentTimeText,
                     color = Color.White.copy(alpha = 0.50f),
                     fontSize = when (clockPreset) {
-                        ClockPreset.SMALL  -> 20.sp
-                        ClockPreset.MEDIUM -> 32.sp
-                        ClockPreset.LARGE  -> 44.sp
-                        ClockPreset.XL     -> 58.sp
-                        else               -> 32.sp
+                        ClockPreset.SMALL  -> 68.sp
+                        ClockPreset.MEDIUM -> 92.sp
+                        ClockPreset.LARGE  -> 116.sp
+                        ClockPreset.XL     -> 140.sp
+                        else               -> 72.sp
                     },
                     fontWeight = FontWeight.Light
                 )

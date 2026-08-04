@@ -574,37 +574,31 @@ private fun CustomizeTab(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(bottom = 20.dp, start = 4.dp)
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .padding(8.dp)
-                        .height(IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // Dot
-                    ShapeSelectorItem(modifier = Modifier.weight(1f), selected = currentDotShape == "circle", onClick = { onShapeChange("circle") }) { isSelected ->
-                        val shapeColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), animationSpec = tween(300), label = "shapeColor")
-                        Box(modifier = Modifier.size(20.dp).background(shapeColor, CircleShape))
-                    }
-                    Spacer(modifier = Modifier.width(1.dp).height(34.dp).align(Alignment.CenterVertically).background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
-                    // Rounded
-                    ShapeSelectorItem(modifier = Modifier.weight(1f), selected = currentDotShape == "rounded", onClick = { onShapeChange("rounded") }) { isSelected ->
-                        val shapeColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), animationSpec = tween(300), label = "shapeColor")
-                        Box(modifier = Modifier.size(20.dp).background(shapeColor, RoundedCornerShape(6.dp)))
-                    }
-                    Spacer(modifier = Modifier.width(1.dp).height(34.dp).align(Alignment.CenterVertically).background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
-                    // Square
-                    ShapeSelectorItem(modifier = Modifier.weight(1f), selected = currentDotShape == "square", onClick = { onShapeChange("square") }) { isSelected ->
-                        val shapeColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), animationSpec = tween(300), label = "shapeColor")
-                        Box(modifier = Modifier.size(20.dp).background(shapeColor, RoundedCornerShape(2.dp)))
-                    }
-                    Spacer(modifier = Modifier.width(1.dp).height(34.dp).align(Alignment.CenterVertically).background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
-                    // Pill
-                    ShapeSelectorItem(modifier = Modifier.weight(1f), selected = currentDotShape == "pill", onClick = { onShapeChange("pill") }) { isSelected ->
-                        val shapeColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), animationSpec = tween(300), label = "shapeColor")
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Box(modifier = Modifier.width(24.dp).height(12.dp).background(shapeColor, RoundedCornerShape(50)))
+                Box(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        val shapes = listOf("circle", "rounded", "square", "pill")
+                        shapes.forEachIndexed { index, shapeStr ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = shapes.size),
+                                onClick = { onShapeChange(shapeStr) },
+                                selected = currentDotShape == shapeStr,
+                                icon = {},
+                                colors = SegmentedButtonDefaults.colors(
+                                    activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    inactiveContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                    inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            ) {
+                                val isSelected = currentDotShape == shapeStr
+                                val shapeColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                when (shapeStr) {
+                                    "circle" -> Box(modifier = Modifier.size(20.dp).background(shapeColor, CircleShape))
+                                    "rounded" -> Box(modifier = Modifier.size(20.dp).background(shapeColor, RoundedCornerShape(6.dp)))
+                                    "square" -> Box(modifier = Modifier.size(20.dp).background(shapeColor, androidx.compose.ui.graphics.RectangleShape))
+                                    "pill" -> Box(modifier = Modifier.width(24.dp).height(12.dp).background(shapeColor, RoundedCornerShape(50)))
+                                }
+                            }
                         }
                     }
                 }
@@ -795,31 +789,5 @@ fun ColorPaletteItem(
                     )
             )
         }
-    }
-}
-
-@Composable
-fun ShapeSelectorItem(
-    modifier: Modifier = Modifier,
-    selected: Boolean,
-    onClick: () -> Unit,
-    content: @Composable (Boolean) -> Unit
-) {
-    val backgroundColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                      else Color.Transparent,
-        animationSpec = tween(durationMillis = 300),
-        label = "shapeSelectorBg"
-    )
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .padding(vertical = 16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        content(selected)
     }
 }

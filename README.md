@@ -1,7 +1,7 @@
 # Year Dots - Your Year in 365 Dots
 
 <p align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png" alt="Year Dots Icon" width="120"/>
+  <img src="assets/icon.svg" alt="Year Dots Icon" width="120"/>
 </p>
 
 <p align="center">
@@ -50,7 +50,7 @@ Designed for fans of **Stoicism**, **digital minimalism**, and quantifiable self
 
 ---
 
-## Screenshots
+## Screenshots(OLD VERSION)
 
 <p align="center">
   <img src="screenshots/Screenshot_01.jpg" width="30%" />

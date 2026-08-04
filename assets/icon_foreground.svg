@@ -1,11 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-160 -160 832 832" width="100%" height="100%">
   <defs>
-    <!-- Background Gradient (Pure Black) -->
-    <linearGradient id="blackBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#000000"/>
-      <stop offset="100%" stop-color="#0A0A0A"/>
-    </linearGradient>
-
     <!-- White Dot Gradient -->
     <linearGradient id="whiteDotGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF"/>
@@ -23,15 +17,7 @@
       <feGaussianBlur stdDeviation="8" result="blur" />
       <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
-
-    <filter id="subtleShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.8"/>
-    </filter>
   </defs>
-
-  <!-- Black Squircle Icon Base -->
-  <rect x="32" y="32" width="448" height="448" rx="105" fill="url(#blackBg)" filter="url(#subtleShadow)"/>
-  <rect x="32" y="32" width="448" height="448" rx="105" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2"/>
 
   <!-- Centered 6x6 Grid (Coordinates: 111, 169, 227, 285, 343, 401) -->
   <g>

@@ -13,8 +13,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.krishana.onedot.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -166,16 +170,20 @@ fun AboutDialog(onDismiss: () -> Unit) {
                             modifier = Modifier.padding(24.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Brush,
-                                contentDescription = "App Icon",
+                            Box(
                                 modifier = Modifier
                                     .size(48.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.primaryContainer)
-                                    .padding(8.dp),
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                                    .background(androidx.compose.ui.graphics.Brush.linearGradient(
+                                        colors = listOf(Color(0xFF000000), Color(0xFF0A0A0A))
+                                    ))
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                                    contentDescription = "App Icon",
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
                                 Text(
@@ -324,7 +332,7 @@ fun AboutDialog(onDismiss: () -> Unit) {
                     )
                     
                     CollaboratorCard(
-                        icon = Icons.Default.Send,
+                        icon = Icons.AutoMirrored.Filled.Send,
                         title = "Telegram channel",
                         onClick = {
                             try {
