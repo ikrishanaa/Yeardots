@@ -7,37 +7,43 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.RoundedCornerShape
 import com.krishana.onedot.core.WallpaperGenerator
 import com.krishana.onedot.data.SettingsRepository
 import com.krishana.onedot.ui.components.AboutDialog
@@ -221,18 +227,18 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp),
+                                shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.errorContainer
                                 )
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(16.dp),
+                                    modifier = Modifier.padding(20.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
                                         text = "⚠️ Permissions Needed",
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -241,7 +247,7 @@ class MainActivity : ComponentActivity() {
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
-                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Spacer(modifier = Modifier.height(14.dp))
                                     Button(onClick = { requestPermissions() }) {
                                         Text("Grant Permissions")
                                     }
@@ -437,11 +443,11 @@ fun SettingsScreen() {
         // Preview Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             ),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
             Column(
                 modifier = Modifier.padding(6.dp),
@@ -451,8 +457,6 @@ fun SettingsScreen() {
                 Text(
                     text = "PREVIEW",
                     style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(vertical = 20.dp)
                 )
@@ -493,18 +497,16 @@ fun SettingsScreen() {
         // Color Palette Card
         ElevatedCard(
            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             ),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = "COLOR PALETTE",
                     style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(bottom = 20.dp, start = 4.dp)
                 )
@@ -565,18 +567,16 @@ fun SettingsScreen() {
         // Shape Selection Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             ),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = "SHAPE",
                     style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(bottom = 20.dp, start = 4.dp)
                 )
@@ -585,8 +585,8 @@ fun SettingsScreen() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(8.dp)
                         .height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -700,18 +700,16 @@ fun SettingsScreen() {
         // Size Section
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             ),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = "SIZE",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.5.sp,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(start = 4.dp, bottom = 20.dp)
                 )
@@ -733,13 +731,13 @@ fun SettingsScreen() {
                                 colors = SegmentedButtonDefaults.colors(
                                     activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                     activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                                    inactiveContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                                     inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             ) {
                                 Text(
-                                    text = label, 
-                                    fontSize = 12.sp,
+                                    text = label,
+                                    style = MaterialTheme.typography.labelMedium,
                                     fontWeight = if (index == currentDotDensity) FontWeight.Bold else FontWeight.Medium
                                 )
                             }
@@ -844,12 +842,22 @@ fun SettingsScreen() {
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
                 )
             },
-            title = { Text("Apply Settings?") },
-            text = { 
-                Text("This will save your color changes and apply them to your lock screen wallpaper.") 
+            title = {
+                Text(
+                    "Apply Settings?",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            text = {
+                Text(
+                    "This will save your color changes and apply them to your lock screen wallpaper.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             },
             confirmButton = {
                 TextButton(
@@ -920,7 +928,8 @@ fun SettingsScreen() {
 }
 
 
-// Modern Color Palette Item
+// ── Animated Color Palette Item with press scale ──────────────────────────────
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorPaletteItem(
     modifier: Modifier = Modifier,
@@ -933,15 +942,34 @@ fun ColorPaletteItem(
 ) {
     val animatedColor by animateColorAsState(
         targetValue = color,
-        animationSpec = tween(300),
-        label = "color"
+        animationSpec = tween(durationMillis = 400),
+        label = "paletteColor"
+    )
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        ),
+        label = "paletteScale"
     )
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
-            .clickable(onClick = onClick)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
             .padding(16.dp)
     ) {
         Row(
@@ -953,27 +981,23 @@ fun ColorPaletteItem(
                 Text(
                     text = topLabel,
                     style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.8.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    fontSize = 10.sp
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = bottomLabel,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 17.sp
                 )
             }
-            
+
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(36.dp)
                     .then(
                         if (hasBorder) Modifier.border(
                             1.dp,
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                            MaterialTheme.colorScheme.outlineVariant,
                             CircleShape
                         ) else Modifier
                     )
@@ -981,10 +1005,10 @@ fun ColorPaletteItem(
                     .background(animatedColor)
                     .then(
                         if (hasGlow) Modifier.shadow(
-                            elevation = 12.dp,
+                            elevation = 14.dp,
                             shape = CircleShape,
-                            ambientColor = animatedColor.copy(alpha = 0.4f),
-                            spotColor = animatedColor.copy(alpha = 0.4f)
+                            ambientColor = animatedColor.copy(alpha = 0.45f),
+                            spotColor = animatedColor.copy(alpha = 0.45f)
                         ) else Modifier
                     )
             )
@@ -992,7 +1016,7 @@ fun ColorPaletteItem(
     }
 }
 
-// Modern Shape Selector Item  
+// ── Animated Shape Selector with gliding capsule ─────────────────────────────
 @Composable
 fun ShapeSelectorItem(
     modifier: Modifier = Modifier,
@@ -1001,15 +1025,15 @@ fun ShapeSelectorItem(
     content: @Composable (Boolean) -> Unit
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f) 
+        targetValue = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                       else Color.Transparent,
-        animationSpec = tween(300),
-        label = "backgroundColor"
+        animationSpec = tween(durationMillis = 300),
+        label = "shapeSelectorBg"
     )
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(vertical = 16.dp),
