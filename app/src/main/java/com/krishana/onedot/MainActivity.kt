@@ -27,8 +27,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -66,49 +69,26 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
     withContext(Dispatchers.IO) {
         try {
             android.util.Log.d("YearDots", "=== WALLPAPER UPDATE START ===")
-            
-            // CRITICAL: Check permissions before attempting to set wallpaper
-            android.util.Log.d("YearDots", "Checking SET_WALLPAPER permission...")
             val hasWallpaperPerm = androidx.core.content.ContextCompat.checkSelfPermission(
                 context, android.Manifest.permission.SET_WALLPAPER
             ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            
             android.util.Log.d("YearDots", "SET_WALLPAPER permission: $hasWallpaperPerm")
-            
             if (!hasWallpaperPerm) {
                 android.util.Log.e("YearDots", "ERROR: SET_WALLPAPER permission not granted!")
                 throw SecurityException("SET_WALLPAPER permission not granted. Please enable it in app permissions.")
             }
-            
-            // CRITICAL FIX #4: Removed unnecessary storage permission checks
-            // WallpaperManager.setBitmap() only requires SET_WALLPAPER permission
-            // Storage permissions are NOT needed for setting wallpaper programmatically
-            android.util.Log.d("YearDots", "Storage permissions not required for WallpaperManager.setBitmap()")
-            
             android.util.Log.d("YearDots", "All permissions OK, getting WallpaperManager...")
             val wallpaperManager = WallpaperManager.getInstance(context)
-            
-            // Get ACTUAL screen dimensions for pixel-perfect quality
             val displayMetrics = context.resources.displayMetrics
             val screenWidth = displayMetrics.widthPixels
             val screenHeight = displayMetrics.heightPixels
-            
-            // Use 1.5x super-sampling for even sharper quality
             val width = (screenWidth * 1.5f).toInt()
             val height = (screenHeight * 1.5f).toInt()
-            
             android.util.Log.d("YearDots", "Screen dimensions: ${screenWidth}x${screenHeight}")
             android.util.Log.d("YearDots", "Wallpaper dimensions (1.5x super-sampled): ${width}x${height}")
-            
-            // Suggest dimensions to prevent downscaling (optional - requires SET_WALLPAPER_HINTS permission)
             try {
                 wallpaperManager.suggestDesiredDimensions(width, height)
-                android.util.Log.d("YearDots", "Successfully suggested dimensions: ${width}x${height}")
-            } catch (e: SecurityException) {
-                android.util.Log.w("YearDots", "Cannot suggest dimensions (missing SET_WALLPAPER_HINTS permission), continuing anyway...")
-            }
-            
-            // Get current settings
+            } catch (_: SecurityException) { }
             android.util.Log.d("YearDots", "Loading color settings...")
             val pastColor = repository.getPastColor()
             val todayColor = repository.getTodayColor()
@@ -116,14 +96,10 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
             val backgroundColor = repository.getBackgroundColor()
             val dotShape = repository.getDotShape()
             val dotDensity = repository.getDotDensity()
-            
             val gridWidthFraction  = repository.getGridWidthFraction()
             val gridHeightFraction = repository.getGridHeightFraction()
             val gridOffsetX = repository.getGridOffsetX()
             val gridOffsetY = repository.getGridOffsetY()
-            
-            android.util.Log.d("YearDots", "Colors - Past: 0x${pastColor.toString(16)}, Today: 0x${todayColor.toString(16)}, Future: 0x${futureColor.toString(16)}, BG: 0x${backgroundColor.toString(16)}, Shape: $dotShape, Density: $dotDensity")
-            
             val themeConfig = WallpaperGenerator.ThemeConfig(
                 pastColor = pastColor,
                 todayColor = todayColor,
@@ -133,41 +109,22 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
                 dotDensity = dotDensity,
                 gridLayout = WallpaperGenerator.GridLayout(gridWidthFraction, gridHeightFraction, gridOffsetX, gridOffsetY)
             )
-            
-            // Generate bitmap
             android.util.Log.d("YearDots", "Generating wallpaper bitmap...")
             val bitmap = WallpaperGenerator.generateBitmap(width, height, themeConfig)
-            android.util.Log.d("YearDots", "Bitmap generated: ${bitmap.width}x${bitmap.height}, config: ${bitmap.config}")
-            
             try {
-                // Use setBitmap with high-quality settings
-                // allowWhileIdle=false ensures full quality processing
-                android.util.Log.d("YearDots", "Setting wallpaper on LOCK SCREEN with high quality...")
+                android.util.Log.d("YearDots", "Setting wallpaper on LOCK SCREEN...")
                 wallpaperManager.setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
                 android.util.Log.d("YearDots", "✓ Wallpaper set successfully at ${width}x${height}!")
             } catch (e: SecurityException) {
-                android.util.Log.e("YearDots", "SecurityException: ${e.message}", e)
-                android.util.Log.e("YearDots", "Stack trace: ${e.stackTraceToString()}")
-                throw SecurityException("Permission denied when setting wallpaper. Please ensure all permissions are granted in Settings > Apps > Year Dots > Permissions.", e)
+                throw SecurityException("Permission denied when setting wallpaper.", e)
             } catch (e: IllegalArgumentException) {
-                android.util.Log.e("YearDots", "IllegalArgumentException: ${e.message}", e)
-                throw Exception("Invalid wallpaper size or format. Please try again.", e)
+                throw Exception("Invalid wallpaper size or format.", e)
             } catch (e: Exception) {
-                android.util.Log.e("YearDots", "Unexpected error: ${e.message}", e)
-                android.util.Log.e("YearDots", "Error type: ${e.javaClass.name}")
-                android.util.Log.e("YearDots", "Stack trace: ${e.stackTraceToString()}")
                 throw Exception("Failed to set wallpaper: ${e.message}", e)
             } finally {
                 bitmap.recycle()
-                android.util.Log.d("YearDots", "Bitmap recycled")
             }
-        } catch (e: SecurityException) {
-            // Re-throw security exceptions with clear message
-            android.util.Log.e("YearDots", "Final SecurityException handler: ${e.message}", e)
-            throw Exception("Permission Error: ${e.message}", e)
         } catch (e: Exception) {
-            // Re-throw with context
-            android.util.Log.e("YearDots", "Final error handler: ${e.message}", e)
             throw Exception("Wallpaper update failed: ${e.message}", e)
         } finally {
             android.util.Log.d("YearDots", "=== WALLPAPER UPDATE END ===")
@@ -176,44 +133,23 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
 }
 
 
-
-
-
 class MainActivity : ComponentActivity() {
-    
-    // Permission state
     private var hasPermissions by mutableStateOf(false)
-    
-    // Permission launcher - must be registered before onCreate
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val allGranted = permissions.all { it.value }
         hasPermissions = allGranted
-        
         if (!allGranted) {
-            Toast.makeText(
-                this,
-                "⚠️ Permissions are needed for the app to function properly",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, "⚠️ Permissions are needed for the app to function properly", Toast.LENGTH_LONG).show()
         }
     }
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Initial check
         checkPermissions()
-        
-        if (!hasPermissions) {
-            // Request on startup if not granted
-            requestPermissions()
-        }
-        
-        // Schedule daily update on first launch
+        if (!hasPermissions) requestPermissions()
         WorkScheduler.scheduleDailyWallpaperUpdate(this)
-        
         setContent {
             OneDotTheme {
                 Surface(
@@ -221,90 +157,42 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        // Permission Warning Banner
                         if (!hasPermissions) {
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
                                 shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer
-                                )
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
                             ) {
                                 Column(
                                     modifier = Modifier.padding(20.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Text(
-                                        text = "⚠️ Permissions Needed",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
-                                    )
+                                    Text("⚠️ Permissions Needed", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onErrorContainer)
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "Please grant all permissions to allow the wallpaper to update automatically.",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
-                                    )
+                                    Text("Please grant all permissions to allow the wallpaper to update automatically.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onErrorContainer)
                                     Spacer(modifier = Modifier.height(14.dp))
-                                    Button(onClick = { requestPermissions() }) {
-                                        Text("Grant Permissions")
-                                    }
+                                    Button(onClick = { requestPermissions() }) { Text("Grant Permissions") }
                                 }
                             }
                         }
-                        
-                        // Main Settings UI
                         SettingsScreen()
                     }
                 }
             }
         }
     }
-    
-    override fun onResume() {
-        super.onResume()
-        // Re-check permissions when user returns to app
-        // (e.g., after granting permissions in Settings)
-        checkPermissions()
-    }
-    
+    override fun onResume() { super.onResume(); checkPermissions() }
     private fun checkPermissions() {
         val permissions = getRequiredPermissions()
-        hasPermissions = permissions.all {
-            androidx.core.content.ContextCompat.checkSelfPermission(
-                this, it
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        }
+        hasPermissions = permissions.all { androidx.core.content.ContextCompat.checkSelfPermission(this, it) == android.content.pm.PackageManager.PERMISSION_GRANTED }
     }
-    
-    private fun requestPermissions() {
-        val permissions = getRequiredPermissions()
-        permissionLauncher.launch(permissions.toTypedArray())
-    }
-    
-    private fun getRequiredPermissions(): List<String> {
-        val permissions = mutableListOf<String>()
-
-        // CRITICAL FIX #4: Only SET_WALLPAPER permission is actually required
-        // Storage permissions are NOT needed for WallpaperManager.setBitmap()
-        // The app will work perfectly without them, avoiding unnecessary permission requests
-        // that confuse users and cause failures when denied
-        
-        // Core functionality - ONLY permission actually required
-        permissions.add(android.Manifest.permission.SET_WALLPAPER)
-
-        // Note: Removed all storage permissions as they are not needed:
-        // - READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE: Not needed
-        // - READ_MEDIA_IMAGES: Not needed  
-        // - POST_NOTIFICATIONS: Not used in this app
-        // WallpaperManager.setBitmap() works with just SET_WALLPAPER permission
-
-        return permissions
-    }
+    private fun requestPermissions() { permissionLauncher.launch(getRequiredPermissions().toTypedArray()) }
+    private fun getRequiredPermissions(): List<String> = listOf(android.Manifest.permission.SET_WALLPAPER)
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Bottom Navigation
+// ═══════════════════════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -312,8 +200,9 @@ fun SettingsScreen() {
     val context = LocalContext.current
     val repository = remember { SettingsRepository(context) }
     val scope = rememberCoroutineScope()
+    var selectedTab by remember { mutableIntStateOf(0) }
 
-    // Collect saved colors from DataStore
+    // ── Collect saved colors from DataStore ───────────────────────────────
     val savedPastColor by repository.pastColorFlow.collectAsState(initial = SettingsRepository.DEFAULT_PAST_COLOR)
     val savedTodayColor by repository.todayColorFlow.collectAsState(initial = SettingsRepository.DEFAULT_TODAY_COLOR)
     val savedFutureColor by repository.futureColorFlow.collectAsState(initial = SettingsRepository.DEFAULT_FUTURE_COLOR)
@@ -325,7 +214,7 @@ fun SettingsScreen() {
     val savedGridOffsetX by repository.gridOffsetXFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_OFFSET_X)
     val savedGridOffsetY by repository.gridOffsetYFlow.collectAsState(initial = SettingsRepository.DEFAULT_GRID_OFFSET_Y)
 
-    // Pending colors (not saved yet)
+    // ── Pending changes ───────────────────────────────────────────────────
     var pendingPastColor by remember { mutableStateOf<Int?>(null) }
     var pendingTodayColor by remember { mutableStateOf<Int?>(null) }
     var pendingFutureColor by remember { mutableStateOf<Int?>(null) }
@@ -337,16 +226,13 @@ fun SettingsScreen() {
     var pendingGridOffsetX by remember { mutableStateOf<Float?>(null) }
     var pendingGridOffsetY by remember { mutableStateOf<Float?>(null) }
 
-    // Color picker dialogs
     var showPastColorPicker by remember { mutableStateOf(false) }
     var showTodayColorPicker by remember { mutableStateOf(false) }
     var showFutureColorPicker by remember { mutableStateOf(false) }
     var showBackgroundColorPicker by remember { mutableStateOf(false) }
-    
-    // Confirmation dialog
     var showSaveDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
-    // Get current colors (pending or saved)
     val currentPastColor = pendingPastColor ?: savedPastColor
     val currentTodayColor = pendingTodayColor ?: savedTodayColor
     val currentFutureColor = pendingFutureColor ?: savedFutureColor
@@ -358,61 +244,206 @@ fun SettingsScreen() {
     val currentGridOffsetX = pendingGridOffsetX ?: savedGridOffsetX
     val currentGridOffsetY = pendingGridOffsetY ?: savedGridOffsetY
 
-    // Check if there are unsaved changes
-    val hasChanges = pendingPastColor != null || 
-                     pendingTodayColor != null || 
-                     pendingFutureColor != null || 
-                     pendingBackgroundColor != null ||
-                     pendingDotShape != null ||
-                     pendingDotDensity != null ||
-                     pendingGridWidthFraction  != null ||
-                     pendingGridHeightFraction != null ||
-                     pendingGridOffsetX != null ||
-                     pendingGridOffsetY != null
+    val hasChanges = pendingPastColor != null || pendingTodayColor != null ||
+                     pendingFutureColor != null || pendingBackgroundColor != null ||
+                     pendingDotShape != null || pendingDotDensity != null ||
+                     pendingGridWidthFraction != null || pendingGridHeightFraction != null ||
+                     pendingGridOffsetX != null || pendingGridOffsetY != null
 
-    var showAboutDialog by remember { mutableStateOf(false) }
-    var showLayoutEditor by remember { mutableStateOf(false) }
-
-    if (showLayoutEditor) {
-        com.krishana.onedot.ui.components.LayoutEditorScreen(
-            initialWidthFraction  = currentGridWidthFraction,
-            initialHeightFraction = currentGridHeightFraction,
-            initialOffsetX = currentGridOffsetX,
-            initialOffsetY = currentGridOffsetY,
-            pastColor = Color(currentPastColor),
-            todayColor = Color(currentTodayColor),
-            futureColor = Color(currentFutureColor),
-            backgroundColor = Color(currentBackgroundColor),
-            dotShape = currentDotShape,
-            dotDensity = currentDotDensity,
-            onDismiss = { showLayoutEditor = false },
-            onSave = { wf, hf, offsetX, offsetY ->
-                pendingGridWidthFraction  = wf
-                pendingGridHeightFraction = hf
-                pendingGridOffsetX = offsetX
-                pendingGridOffsetY = offsetY
-                showLayoutEditor = false
+    // ── Scaffold with bottom navigation ──────────────────────────────────
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            ) {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Visibility, contentDescription = null) },
+                    label = { Text("Preview") },
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Palette, contentDescription = null) },
+                    label = { Text("Customize") },
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.GridView, contentDescription = null) },
+                    label = { Text("Layout") },
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 }
+                )
             }
-        )
-        return
+        }
+    ) { paddingValues ->
+        when (selectedTab) {
+            0 -> PreviewTab(
+                modifier = Modifier.padding(paddingValues),
+                currentPastColor = currentPastColor,
+                currentTodayColor = currentTodayColor,
+                currentFutureColor = currentFutureColor,
+                currentBackgroundColor = currentBackgroundColor,
+                currentDotShape = currentDotShape,
+                currentDotDensity = currentDotDensity,
+                hasChanges = hasChanges,
+                onAboutClick = { showAboutDialog = true },
+                onEditLayout = { selectedTab = 2 },
+                onSaveClick = { showSaveDialog = true }
+            )
+            1 -> CustomizeTab(
+                modifier = Modifier.padding(paddingValues),
+                currentPastColor = currentPastColor,
+                currentTodayColor = currentTodayColor,
+                currentFutureColor = currentFutureColor,
+                currentBackgroundColor = currentBackgroundColor,
+                currentDotShape = currentDotShape,
+                currentDotDensity = currentDotDensity,
+                hasChanges = hasChanges,
+                onPastColorClick = { showPastColorPicker = true },
+                onTodayColorClick = { showTodayColorPicker = true },
+                onFutureColorClick = { showFutureColorPicker = true },
+                onBackgroundColorClick = { showBackgroundColorPicker = true },
+                onShapeChange = { pendingDotShape = it },
+                onDensityChange = { pendingDotDensity = it },
+                onSaveClick = { showSaveDialog = true }
+            )
+            2 -> LayoutTab(
+                modifier = Modifier.padding(paddingValues),
+                initialWidthFraction  = currentGridWidthFraction,
+                initialHeightFraction = currentGridHeightFraction,
+                initialOffsetX = currentGridOffsetX,
+                initialOffsetY = currentGridOffsetY,
+                pastColor = Color(currentPastColor),
+                todayColor = Color(currentTodayColor),
+                futureColor = Color(currentFutureColor),
+                backgroundColor = Color(currentBackgroundColor),
+                dotShape = currentDotShape,
+                dotDensity = currentDotDensity,
+                onBack = { selectedTab = 0 },
+                onSave = { wf, hf, ox, oy ->
+                    pendingGridWidthFraction = wf
+                    pendingGridHeightFraction = hf
+                    pendingGridOffsetX = ox
+                    pendingGridOffsetY = oy
+                }
+            )
+        }
     }
 
+    // ── Dialogs (rendered as overlays) ───────────────────────────────────
+    if (showPastColorPicker) {
+        ImprovedColorPickerDialog(
+            title = "Past Days Color",
+            currentColor = Color(currentPastColor),
+            onDismiss = { showPastColorPicker = false },
+            onColorSelected = { color -> pendingPastColor = color.toArgb(); showPastColorPicker = false }
+        )
+    }
+    if (showTodayColorPicker) {
+        ImprovedColorPickerDialog(
+            title = "Current Day Color",
+            currentColor = Color(currentTodayColor),
+            onDismiss = { showTodayColorPicker = false },
+            onColorSelected = { color -> pendingTodayColor = color.toArgb(); showTodayColorPicker = false }
+        )
+    }
+    if (showFutureColorPicker) {
+        ImprovedColorPickerDialog(
+            title = "Future Days Color",
+            currentColor = Color(currentFutureColor),
+            onDismiss = { showFutureColorPicker = false },
+            onColorSelected = { color -> pendingFutureColor = color.toArgb(); showFutureColorPicker = false }
+        )
+    }
+    if (showBackgroundColorPicker) {
+        ImprovedColorPickerDialog(
+            title = "Background Color",
+            currentColor = Color(currentBackgroundColor),
+            onDismiss = { showBackgroundColorPicker = false },
+            onColorSelected = { color -> pendingBackgroundColor = color.toArgb(); showBackgroundColorPicker = false }
+        )
+    }
+    if (showAboutDialog) {
+        AboutDialog(onDismiss = { showAboutDialog = false })
+    }
+    if (showSaveDialog) {
+        AlertDialog(
+            onDismissRequest = { showSaveDialog = false },
+            icon = { Icon(Icons.Default.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp)) },
+            title = { Text("Apply Settings?", style = MaterialTheme.typography.headlineSmall) },
+            text = { Text("This will save your changes and apply them to your lock screen wallpaper.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch {
+                        try {
+                            pendingPastColor?.let { repository.updatePastColor(it) }
+                            pendingTodayColor?.let { repository.updateTodayColor(it) }
+                            pendingFutureColor?.let { repository.updateFutureColor(it) }
+                            pendingBackgroundColor?.let { repository.updateBackgroundColor(it) }
+                            pendingDotShape?.let { repository.updateDotShape(it) }
+                            pendingDotDensity?.let { repository.updateDotDensity(it) }
+                            if (pendingGridWidthFraction != null || pendingGridHeightFraction != null || pendingGridOffsetX != null || pendingGridOffsetY != null) {
+                                repository.updateGridLayout(
+                                    pendingGridWidthFraction ?: savedGridWidthFraction,
+                                    pendingGridHeightFraction ?: savedGridHeightFraction,
+                                    pendingGridOffsetX ?: savedGridOffsetX,
+                                    pendingGridOffsetY ?: savedGridOffsetY
+                                )
+                            }
+                            applyWallpaperNow(context, repository)
+                            pendingPastColor = null; pendingTodayColor = null; pendingFutureColor = null
+                            pendingBackgroundColor = null; pendingDotShape = null; pendingDotDensity = null
+                            pendingGridWidthFraction = null; pendingGridHeightFraction = null
+                            pendingGridOffsetX = null; pendingGridOffsetY = null
+                            showSaveDialog = false
+                            Toast.makeText(context, "✓ Settings applied to lock screen!", Toast.LENGTH_LONG).show()
+                        } catch (e: Exception) {
+                            showSaveDialog = false
+                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }) { Text("Apply") }
+            },
+            dismissButton = { TextButton(onClick = { showSaveDialog = false }) { Text("Cancel") } }
+        )
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Tab 1 — Preview
+// ═══════════════════════════════════════════════════════════════════════════════
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PreviewTab(
+    modifier: Modifier = Modifier,
+    currentPastColor: Int,
+    currentTodayColor: Int,
+    currentFutureColor: Int,
+    currentBackgroundColor: Int,
+    currentDotShape: String,
+    currentDotDensity: Int,
+    hasChanges: Boolean,
+    onAboutClick: () -> Unit,
+    onEditLayout: () -> Unit,
+    onSaveClick: () -> Unit,
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
             .padding(horizontal = 20.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         // Header
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -423,20 +454,10 @@ fun SettingsScreen() {
                 fontSize = 36.sp
             )
             IconButton(
-                onClick = { 
-                    android.util.Log.d("YearDots", "Info icon clicked - setting showAboutDialog to true")
-                    showAboutDialog = true 
-                },
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
+                onClick = onAboutClick,
+                modifier = Modifier.size(40.dp).clip(CircleShape)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "About",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(28.dp)
-                )
+                Icon(Icons.Default.Info, contentDescription = "About", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
             }
         }
 
@@ -444,32 +465,24 @@ fun SettingsScreen() {
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
+            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(6.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Section Label
+            Column(modifier = Modifier.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "PREVIEW",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(vertical = 20.dp)
                 )
-                
-                // Preview container with background
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 0.dp)
+                        .padding(horizontal = 12.dp)
                         .aspectRatio(1f)
                         .clip(RoundedCornerShape(24.dp))
                         .background(Color(currentBackgroundColor))
-                        .clickable { showLayoutEditor = true },
+                        .clickable(onClick = onEditLayout),
                     contentAlignment = Alignment.Center
                 ) {
                     WallpaperPreview(
@@ -481,10 +494,9 @@ fun SettingsScreen() {
                         dotDensity = currentDotDensity
                     )
                 }
-                
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
-                    onClick = { showLayoutEditor = true },
+                    onClick = onEditLayout,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth()
                 ) {
@@ -494,13 +506,62 @@ fun SettingsScreen() {
             }
         }
 
-        // Color Palette Card
+        // Save Button
+        if (hasChanges) {
+            Button(
+                onClick = onSaveClick,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Save & Apply to Lockscreen", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Tab 2 — Customize
+// ═══════════════════════════════════════════════════════════════════════════════
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CustomizeTab(
+    modifier: Modifier = Modifier,
+    currentPastColor: Int,
+    currentTodayColor: Int,
+    currentFutureColor: Int,
+    currentBackgroundColor: Int,
+    currentDotShape: String,
+    currentDotDensity: Int,
+    hasChanges: Boolean,
+    onPastColorClick: () -> Unit,
+    onTodayColorClick: () -> Unit,
+    onFutureColorClick: () -> Unit,
+    onBackgroundColorClick: () -> Unit,
+    onShapeChange: (String) -> Unit,
+    onDensityChange: (Int) -> Unit,
+    onSaveClick: () -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 20.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // ── Color Palette Card ────────────────────────────────────────────
         ElevatedCard(
-           modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
+            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
@@ -510,67 +571,24 @@ fun SettingsScreen() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(bottom = 20.dp, start = 4.dp)
                 )
-                
-                // 2x2 Grid
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Past Days
-                        ColorPaletteItem(
-                            modifier = Modifier.weight(1f),
-                            topLabel = "PAST",
-                            bottomLabel = "Days",
-                            color = Color(currentPastColor),
-                            onClick = { showPastColorPicker = true }
-                        )
-                        
-                        // Today
-                        ColorPaletteItem(
-                            modifier = Modifier.weight(1f),
-                            topLabel = "TODAY",
-                            bottomLabel = "Current",
-                            color = Color(currentTodayColor),
-                            onClick = { showTodayColorPicker = true },
-                            hasGlow = true
-                        )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        ColorPaletteItem(modifier = Modifier.weight(1f), topLabel = "PAST", bottomLabel = "Days", color = Color(currentPastColor), onClick = onPastColorClick)
+                        ColorPaletteItem(modifier = Modifier.weight(1f), topLabel = "TODAY", bottomLabel = "Current", color = Color(currentTodayColor), onClick = onTodayColorClick, hasGlow = true)
                     }
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Future Days
-                        ColorPaletteItem(
-                            modifier = Modifier.weight(1f),
-                            topLabel = "FUTURE",
-                            bottomLabel = "Days",
-                            color = Color(currentFutureColor),
-                            onClick = { showFutureColorPicker = true }
-                        )
-                        
-                        // Background
-                        ColorPaletteItem(
-                            modifier = Modifier.weight(1f),
-                            topLabel = "BASE",
-                            bottomLabel = "Theme",
-                            color = Color(currentBackgroundColor),
-                            onClick = { showBackgroundColorPicker = true },
-                            hasBorder = true
-                        )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        ColorPaletteItem(modifier = Modifier.weight(1f), topLabel = "FUTURE", bottomLabel = "Days", color = Color(currentFutureColor), onClick = onFutureColorClick)
+                        ColorPaletteItem(modifier = Modifier.weight(1f), topLabel = "BASE", bottomLabel = "Theme", color = Color(currentBackgroundColor), onClick = onBackgroundColorClick, hasBorder = true)
                     }
                 }
             }
         }
 
-        // Shape Selection Card
+        // ── Shape Card ────────────────────────────────────────────────────
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
+            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
@@ -580,11 +598,8 @@ fun SettingsScreen() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(bottom = 20.dp, start = 4.dp)
                 )
-                
-                // Horizontal shape selector
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .clip(RoundedCornerShape(18.dp))
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(8.dp)
@@ -592,118 +607,39 @@ fun SettingsScreen() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Dot
-                    ShapeSelectorItem(
-                        modifier = Modifier.weight(1f),
-                        selected = currentDotShape == "circle",
-                        onClick = { pendingDotShape = "circle" }
-                    ) { isSelected ->
-                        val shapeColor by animateColorAsState(
-                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface 
-                                          else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            animationSpec = tween(300),
-                            label = "shapeColor"
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .background(shapeColor, CircleShape)
-                        )
+                    ShapeSelectorItem(modifier = Modifier.weight(1f), selected = currentDotShape == "circle", onClick = { onShapeChange("circle") }) { isSelected ->
+                        val shapeColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), animationSpec = tween(300), label = "shapeColor")
+                        Box(modifier = Modifier.size(20.dp).background(shapeColor, CircleShape))
                     }
-                    
-                    Spacer(modifier = Modifier
-                        .width(1.dp)
-                        .height(34.dp)
-                        .align(Alignment.CenterVertically)
-                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
-                    )
-                    
+                    Spacer(modifier = Modifier.width(1.dp).height(34.dp).align(Alignment.CenterVertically).background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
                     // Rounded
-                    ShapeSelectorItem(
-                        modifier = Modifier.weight(1f),
-                        selected = currentDotShape == "rounded",
-                        onClick = { pendingDotShape = "rounded" }
-                    ) { isSelected ->
-                        val shapeColor by animateColorAsState(
-                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface 
-                                          else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            animationSpec = tween(300),
-                            label = "shapeColor"
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .background(shapeColor, RoundedCornerShape(6.dp))
-                        )
+                    ShapeSelectorItem(modifier = Modifier.weight(1f), selected = currentDotShape == "rounded", onClick = { onShapeChange("rounded") }) { isSelected ->
+                        val shapeColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), animationSpec = tween(300), label = "shapeColor")
+                        Box(modifier = Modifier.size(20.dp).background(shapeColor, RoundedCornerShape(6.dp)))
                     }
-                    
-                    Spacer(modifier = Modifier
-                        .width(1.dp)
-                        .height(34.dp)
-                        .align(Alignment.CenterVertically)
-                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
-                    )
-                    
+                    Spacer(modifier = Modifier.width(1.dp).height(34.dp).align(Alignment.CenterVertically).background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
                     // Square
-                    ShapeSelectorItem(
-                        modifier = Modifier.weight(1f),
-                        selected = currentDotShape == "square",
-                        onClick = { pendingDotShape = "square" }
-                    ) { isSelected ->
-                        val shapeColor by animateColorAsState(
-                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface 
-                                          else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            animationSpec = tween(300),
-                            label = "shapeColor"
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .background(shapeColor, RoundedCornerShape(2.dp))
-                        )
+                    ShapeSelectorItem(modifier = Modifier.weight(1f), selected = currentDotShape == "square", onClick = { onShapeChange("square") }) { isSelected ->
+                        val shapeColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), animationSpec = tween(300), label = "shapeColor")
+                        Box(modifier = Modifier.size(20.dp).background(shapeColor, RoundedCornerShape(2.dp)))
                     }
-                    
-                    Spacer(modifier = Modifier
-                        .width(1.dp)
-                        .height(34.dp)
-                        .align(Alignment.CenterVertically)
-                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
-                    )
-                    
+                    Spacer(modifier = Modifier.width(1.dp).height(34.dp).align(Alignment.CenterVertically).background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)))
                     // Pill
-                    ShapeSelectorItem(
-                        modifier = Modifier.weight(1f),
-                        selected = currentDotShape == "pill",
-                        onClick = { pendingDotShape = "pill" }
-                    ) { isSelected ->
-                        val shapeColor by animateColorAsState(
-                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface 
-                                          else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            animationSpec = tween(300),
-                            label = "shapeColor"
-                        )
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .width(24.dp)
-                                    .height(12.dp)
-                                    .background(shapeColor, RoundedCornerShape(50))
-                            )
+                    ShapeSelectorItem(modifier = Modifier.weight(1f), selected = currentDotShape == "pill", onClick = { onShapeChange("pill") }) { isSelected ->
+                        val shapeColor by animateColorAsState(targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), animationSpec = tween(300), label = "shapeColor")
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Box(modifier = Modifier.width(24.dp).height(12.dp).background(shapeColor, RoundedCornerShape(50)))
                         }
                     }
                 }
             }
         }
 
-        // Size Section
+        // ── Size Card ─────────────────────────────────────────────────────
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
+            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
@@ -713,20 +649,13 @@ fun SettingsScreen() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.padding(start = 4.dp, bottom = 20.dp)
                 )
-                
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                ) {
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                Box(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                         val labels = listOf("Tiny", "Small", "Medium", "Large")
                         labels.forEachIndexed { index, label ->
                             SegmentedButton(
                                 shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
-                                onClick = { pendingDotDensity = index },
+                                onClick = { onDensityChange(index) },
                                 selected = index == currentDotDensity,
                                 colors = SegmentedButtonDefaults.colors(
                                     activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -735,11 +664,7 @@ fun SettingsScreen() {
                                     inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             ) {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = if (index == currentDotDensity) FontWeight.Bold else FontWeight.Medium
-                                )
+                                Text(text = label, style = MaterialTheme.typography.labelMedium, fontWeight = if (index == currentDotDensity) FontWeight.Bold else FontWeight.Medium)
                             }
                         }
                     }
@@ -747,188 +672,65 @@ fun SettingsScreen() {
             }
         }
 
-        // Save & Apply Button
+        // Save Button
         if (hasChanges) {
             Button(
-                onClick = { showSaveDialog = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                onClick = onSaveClick,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
+                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Save & Apply to Lockscreen",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text("Save & Apply to Lockscreen", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-    }
-
-    // Color Picker Dialogs
-    if (showPastColorPicker) {
-        ImprovedColorPickerDialog(
-            title = "Past Days Color",
-            currentColor = Color(currentPastColor),
-            onDismiss = { showPastColorPicker = false },
-            onColorSelected = { color ->
-                pendingPastColor = color.toArgb()
-                showPastColorPicker = false
-            }
-        )
-    }
-
-    if (showTodayColorPicker) {
-        ImprovedColorPickerDialog(
-            title = "Current Day Color",
-            currentColor = Color(currentTodayColor),
-            onDismiss = { showTodayColorPicker = false },
-            onColorSelected = { color ->
-                pendingTodayColor = color.toArgb()
-                showTodayColorPicker = false
-            }
-        )
-    }
-
-    if (showFutureColorPicker) {
-        ImprovedColorPickerDialog(
-            title = "Future Days Color",
-            currentColor = Color(currentFutureColor),
-            onDismiss = { showFutureColorPicker = false },
-            onColorSelected = { color ->
-                pendingFutureColor = color.toArgb()
-                showFutureColorPicker = false
-            }
-        )
-    }
-
-    if (showBackgroundColorPicker) {
-        ImprovedColorPickerDialog(
-            title = "Background Color",
-            currentColor = Color(currentBackgroundColor),
-            onDismiss = { showBackgroundColorPicker = false },
-            onColorSelected = { color ->
-                pendingBackgroundColor = color.toArgb()
-                showBackgroundColorPicker = false
-            }
-        )
-    }
-
-    // About Dialog
-    android.util.Log.d("YearDots", "showAboutDialog state: $showAboutDialog")
-    if (showAboutDialog) {
-        android.util.Log.d("YearDots", "Rendering AboutDialog...")
-        AboutDialog(
-            onDismiss = { showAboutDialog = false }
-        )
-    }
-
-    // Save Confirmation Dialog
-    if (showSaveDialog) {
-        AlertDialog(
-            onDismissRequest = { showSaveDialog = false },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            title = {
-                Text(
-                    "Apply Settings?",
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            },
-            text = {
-                Text(
-                    "This will save your color changes and apply them to your lock screen wallpaper.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        scope.launch {
-                            try {
-                                // Save pending colors
-                                pendingPastColor?.let { repository.updatePastColor(it) }
-                                pendingTodayColor?.let { repository.updateTodayColor(it) }
-                                pendingFutureColor?.let { repository.updateFutureColor(it) }
-                                pendingBackgroundColor?.let { repository.updateBackgroundColor(it) }
-                                pendingDotShape?.let { repository.updateDotShape(it) }
-                                pendingDotDensity?.let { repository.updateDotDensity(it) }
-                                
-                                if (pendingGridWidthFraction != null || pendingGridHeightFraction != null ||
-                                    pendingGridOffsetX != null || pendingGridOffsetY != null) {
-                                    repository.updateGridLayout(
-                                        pendingGridWidthFraction  ?: savedGridWidthFraction,
-                                        pendingGridHeightFraction ?: savedGridHeightFraction,
-                                        pendingGridOffsetX ?: savedGridOffsetX,
-                                        pendingGridOffsetY ?: savedGridOffsetY
-                                    )
-                                }
-                                
-                                // Apply wallpaper immediately (synchronous)
-                                applyWallpaperNow(context, repository)
-                                
-                                // Clear pending changes
-                                pendingPastColor = null
-                                pendingTodayColor = null
-                                pendingFutureColor = null
-                                pendingBackgroundColor = null
-                                pendingDotShape = null
-                                pendingDotDensity = null
-                                pendingGridWidthFraction  = null
-                                pendingGridHeightFraction = null
-                                pendingGridOffsetX = null
-                                pendingGridOffsetY = null
-                                
-                                showSaveDialog = false
-                                
-                                Toast.makeText(
-                                    context,
-                                    "✓ Settings applied to lock screen!",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            } catch (e: Exception) {
-                                showSaveDialog = false
-                                Toast.makeText(
-                                    context,
-                                    "Error: ${e.message}",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                    }
-                ) {
-                    Text("Apply")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showSaveDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Tab 3 — Layout
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ── Animated Color Palette Item with press scale ──────────────────────────────
+@Composable
+private fun LayoutTab(
+    @Suppress("UNUSED_PARAMETER") modifier: Modifier = Modifier,
+    initialWidthFraction: Float,
+    initialHeightFraction: Float,
+    initialOffsetX: Float,
+    initialOffsetY: Float,
+    pastColor: Color,
+    todayColor: Color,
+    futureColor: Color,
+    backgroundColor: Color,
+    dotShape: String,
+    dotDensity: Int,
+    onBack: () -> Unit,
+    onSave: (widthFraction: Float, heightFraction: Float, offsetX: Float, offsetY: Float) -> Unit,
+) {
+    com.krishana.onedot.ui.components.LayoutEditorScreen(
+        initialWidthFraction  = initialWidthFraction,
+        initialHeightFraction = initialHeightFraction,
+        initialOffsetX = initialOffsetX,
+        initialOffsetY = initialOffsetY,
+        pastColor = pastColor,
+        todayColor = todayColor,
+        futureColor = futureColor,
+        backgroundColor = backgroundColor,
+        dotShape = dotShape,
+        dotDensity = dotDensity,
+        onDismiss = onBack,
+        onSave = { wf, hf, ox, oy -> onSave(wf, hf, ox, oy); onBack() }
+    )
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Shared Helpers
+// ═══════════════════════════════════════════════════════════════════════════════
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorPaletteItem(
@@ -1016,7 +818,6 @@ fun ColorPaletteItem(
     }
 }
 
-// ── Animated Shape Selector with gliding capsule ─────────────────────────────
 @Composable
 fun ShapeSelectorItem(
     modifier: Modifier = Modifier,
