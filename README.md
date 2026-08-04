@@ -191,22 +191,6 @@ Please check [existing issues](https://github.com/ikrishanaa/Yeardots/issues) fi
 
 ---
 
-## Roadmap
-
-### v1.1 (Planned)
-- [ ] Widget support for home screen
-- [ ] Export wallpaper as image
-- [ ] Multiple calendar systems (lunar, ISO week-based)
-- [ ] Animations on wallpaper change
-
-### v1.2 (Planned)
-- [ ] Milestone markers for important dates
-- [ ] Weekly/monthly view modes
-- [ ] Tile/pattern backgrounds
-
-See [open issues](https://github.com/ikrishanaa/Yeardots/issues) for feature discussions.
-
----
 
 ## License
 
