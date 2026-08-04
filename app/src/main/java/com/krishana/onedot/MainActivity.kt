@@ -287,6 +287,10 @@ fun SettingsScreen() {
                 currentBackgroundColor = currentBackgroundColor,
                 currentDotShape = currentDotShape,
                 currentDotDensity = currentDotDensity,
+                currentGridWidthFraction = currentGridWidthFraction,
+                currentGridHeightFraction = currentGridHeightFraction,
+                currentGridOffsetX = currentGridOffsetX,
+                currentGridOffsetY = currentGridOffsetY,
                 hasChanges = hasChanges,
                 onAboutClick = { showAboutDialog = true },
                 onEditLayout = { selectedTab = 2 },
@@ -426,6 +430,10 @@ private fun PreviewTab(
     currentBackgroundColor: Int,
     currentDotShape: String,
     currentDotDensity: Int,
+    currentGridWidthFraction: Float,
+    currentGridHeightFraction: Float,
+    currentGridOffsetX: Float,
+    currentGridOffsetY: Float,
     hasChanges: Boolean,
     onAboutClick: () -> Unit,
     onEditLayout: () -> Unit,
@@ -479,19 +487,21 @@ private fun PreviewTab(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp)
-                        .aspectRatio(1f)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color(currentBackgroundColor))
-                        .clickable(onClick = onEditLayout),
-                    contentAlignment = Alignment.Center
+                        .clickable(onClick = onEditLayout)
                 ) {
                     WallpaperPreview(
+                        modifier = Modifier.fillMaxWidth(),
                         pastColor = Color(currentPastColor),
                         todayColor = Color(currentTodayColor),
                         futureColor = Color(currentFutureColor),
-                        backgroundColor = Color.Transparent,
+                        backgroundColor = Color(currentBackgroundColor),
                         dotShape = currentDotShape,
-                        dotDensity = currentDotDensity
+                        dotDensity = currentDotDensity,
+                        gridWidthFraction = currentGridWidthFraction,
+                        gridHeightFraction = currentGridHeightFraction,
+                        gridOffsetX = currentGridOffsetX,
+                        gridOffsetY = currentGridOffsetY
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
