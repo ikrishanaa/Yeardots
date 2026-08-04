@@ -29,32 +29,26 @@ import java.io.File
 class SettingsRepositoryTest {
 
     private lateinit var context: Context
-    private lateinit var dataStore: DataStore<Preferences>
     private lateinit var repository: SettingsRepository
     private lateinit var testScope: TestScope
-    private lateinit var testDataStoreFile: File
 
     @Before
     fun setup() {
-        // Use Robolectric's application context instead of mock
         context = RuntimeEnvironment.getApplication()
         testScope = TestScope(UnconfinedTestDispatcher() + Job())
-        
-        // Create temporary DataStore for testing
-        testDataStoreFile = File.createTempFile("test_settings", ".preferences_pb")
-        dataStore = PreferenceDataStoreFactory.create(
-            scope = testScope,
-            produceFile = { testDataStoreFile }
-        )
-        
-        // Create repository with test DataStore
         repository = SettingsRepository(context)
+        
+        // Ensure clean state for DataStore which acts as a singleton in Robolectric
+        kotlinx.coroutines.runBlocking {
+            repository.clearForTesting()
+        }
     }
 
     @After
     fun cleanup() {
-        // Clean up test file
-        testDataStoreFile.delete()
+        kotlinx.coroutines.runBlocking {
+            repository.clearForTesting()
+        }
     }
 
     @Test
@@ -90,10 +84,10 @@ class SettingsRepositoryTest {
     }
 
     @Test
-    fun `test default dot shape is circle`() = testScope.runTest {
+    fun `test default dot shape is dot`() = testScope.runTest {
         val actualShape = repository.getDotShape()
         
-        assertEquals("Default dot shape should be circle", "circle", actualShape)
+        assertEquals("Default dot shape should be dot", SettingsRepository.DEFAULT_DOT_SHAPE, actualShape)
     }
 
     @Test

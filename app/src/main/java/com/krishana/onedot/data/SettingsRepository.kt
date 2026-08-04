@@ -194,4 +194,8 @@ class SettingsRepository(private val context: Context) {
     suspend fun getGridOffsetY(): Float {
         return context.dataStore.data.first()[GRID_OFFSET_Y_KEY] ?: DEFAULT_GRID_OFFSET_Y
     }
+
+    suspend fun clearForTesting() {
+        context.dataStore.edit { it.clear() }
+    }
 }

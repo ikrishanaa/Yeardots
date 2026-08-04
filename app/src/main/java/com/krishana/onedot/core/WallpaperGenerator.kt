@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.RectF
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
@@ -148,21 +149,21 @@ object WallpaperGenerator {
                         val corner = glowSize * 0.05f 
                         val left = centerX - glowSize / 2
                         val top = centerY - glowSize / 2
-                        canvas.drawRoundRect(left, top, left + glowSize, top + glowSize, corner, corner, glowPaint)
+                        canvas.drawRoundRect(RectF(left, top, left + glowSize, top + glowSize), corner, corner, glowPaint)
                     }
                     "rounded" -> {
                         val glowSize = dotDiameter * 1.2f
                         val corner = glowSize * 0.3f
                         val left = centerX - glowSize / 2
                         val top = centerY - glowSize / 2
-                        canvas.drawRoundRect(left, top, left + glowSize, top + glowSize, corner, corner, glowPaint)
+                        canvas.drawRoundRect(RectF(left, top, left + glowSize, top + glowSize), corner, corner, glowPaint)
                     }
                     "pill" -> {
                         val w = dotDiameter * 1.2f // Wider
                         val h = dotDiameter * 0.7f // Shorter
                         val left = centerX - w / 2
                         val top = centerY - h / 2
-                        canvas.drawRoundRect(left, top, left + w, top + h, h/2, h/2, glowPaint)
+                        canvas.drawRoundRect(RectF(left, top, left + w, top + h), h/2, h/2, glowPaint)
                     }
                     else -> { // "circle" or default
                          canvas.drawCircle(centerX, centerY, dotRadius * 1.25f, glowPaint)
@@ -178,7 +179,7 @@ object WallpaperGenerator {
                     val corner = size * 0.05f // Slight rounding for polish
                     val left = centerX - size / 2
                     val top = centerY - size / 2
-                    canvas.drawRoundRect(left, top, left + size, top + size, corner, corner, paint)
+                    canvas.drawRoundRect(RectF(left, top, left + size, top + size), corner, corner, paint)
                 }
                 "rounded" -> {
                     // Soft rounded square (Apple icon style)
@@ -186,7 +187,7 @@ object WallpaperGenerator {
                     val corner = size * 0.35f 
                     val left = centerX - size / 2
                     val top = centerY - size / 2
-                    canvas.drawRoundRect(left, top, left + size, top + size, corner, corner, paint)
+                    canvas.drawRoundRect(RectF(left, top, left + size, top + size), corner, corner, paint)
                 }
                 "pill" -> {
                     // Horizontal Pill / Stadium
@@ -196,7 +197,7 @@ object WallpaperGenerator {
                     val left = centerX - w / 2
                     val top = centerY - h / 2
                     val radius = h / 2f // Full rounded ends
-                    canvas.drawRoundRect(left, top, left + w, top + h, radius, radius, paint)
+                    canvas.drawRoundRect(RectF(left, top, left + w, top + h), radius, radius, paint)
                 }
                 else -> { 
                     // "circle" / "dot"
