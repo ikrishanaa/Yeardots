@@ -163,13 +163,47 @@ fun LayoutEditorScreen(
         if (!changed) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
     }
 
-    // Pixel-space getters
-    fun pxL() = gridL * screenW
-    fun pxT() = gridT * screenH
-    fun pxR() = gridR * screenW
-    fun pxB() = gridB * screenH
-    fun pxW() = (gridR - gridL) * screenW
-    fun pxH() = (gridB - gridT) * screenH
+    // ── Grid position and size animation with spring physics ────────────────
+    val animGridL by animateFloatAsState(
+        targetValue = gridL,
+        animationSpec = spring(
+            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioLowBouncy,
+            stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow
+        ),
+        label = "animGridL"
+    )
+    val animGridT by animateFloatAsState(
+        targetValue = gridT,
+        animationSpec = spring(
+            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioLowBouncy,
+            stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow
+        ),
+        label = "animGridT"
+    )
+    val animGridR by animateFloatAsState(
+        targetValue = gridR,
+        animationSpec = spring(
+            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioLowBouncy,
+            stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow
+        ),
+        label = "animGridR"
+    )
+    val animGridB by animateFloatAsState(
+        targetValue = gridB,
+        animationSpec = spring(
+            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioLowBouncy,
+            stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow
+        ),
+        label = "animGridB"
+    )
+
+    // Pixel-space getters (using animated values for visual rendering)
+    fun pxL() = animGridL * screenW
+    fun pxT() = animGridT * screenH
+    fun pxR() = animGridR * screenW
+    fun pxB() = animGridB * screenH
+    fun pxW() = (animGridR - animGridL) * screenW
+    fun pxH() = (animGridB - animGridT) * screenH
 
     // ── Root container ────────────────────────────────────────────────────
     Box(
@@ -242,26 +276,49 @@ fun LayoutEditorScreen(
                 val currentDay = remember { LocalDate.now().dayOfYear }
                 val densityMul = when (dotDensity) { 0 -> 0.70f; 2 -> 1.30f; 3 -> 1.60f; else -> 1.00f }
 
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    // Responsive grid: pick column count to match live aspect ratio
-                    val w    = size.width
-                    val h    = size.height
-                    val ar   = if (h > 0f) w / h else 1f
-                    val cols = sqrt(TOTAL_DOTS.toFloat() * ar).roundToInt().coerceIn(5, 25)
-                    val rows = ceil(TOTAL_DOTS.toFloat() / cols).toInt()
-                    // cellSize fits both axes without overflow
-                    val cellSize = min(w / cols, h / rows)
-                    // Centre the dot sub-grid inside the canvas
-                    val startX = (w - cellSize * cols) / 2f
-                    val startY = (h - cellSize * rows) / 2f
+                val animCols by animateFloatAsState(
+                    targetValue = derivedCols.toFloat(),
+                    animationSpec = spring(
+                        dampingRatio = androidx.compose.animation.core.Spring.DampingRatioLowBouncy,
+                        stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow
+                    ),
+                    label = "animCols"
+                )
 
-                    val dotRadius = cellSize * 0.28f * densityMul
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+                    
+                    val cols1 = kotlin.math.floor(animCols).toInt().coerceIn(5, 25)
+                    val cols2 = kotlin.math.ceil(animCols).toInt().coerceIn(5, 25)
+                    val fraction = animCols - cols1
+
+                    fun calcDot(i: Int, c: Int): Pair<Float, Float> {
+                        val r = ceil(TOTAL_DOTS.toFloat() / c).toInt()
+                        val cell = min(w / c, h / r)
+                        val stX = (w - cell * c) / 2f
+                        val stY = (h - cell * r) / 2f
+                        val col = i % c
+                        val row = i / c
+                        return Pair(stX + col * cell + cell / 2f, stY + row * cell + cell / 2f)
+                    }
+
+                    fun calcRadius(c: Int): Float {
+                        val r = ceil(TOTAL_DOTS.toFloat() / c).toInt()
+                        val cell = min(w / c, h / r)
+                        return cell * 0.28f * densityMul
+                    }
+
+                    val radius1 = calcRadius(cols1)
+                    val radius2 = calcRadius(cols2)
+                    val dotRadius = radius1 + (radius2 - radius1) * fraction
 
                     for (i in 0 until TOTAL_DOTS) {
-                        val col = i % cols
-                        val row = i / cols
-                        val cx  = startX + col * cellSize + cellSize / 2f
-                        val cy  = startY + row * cellSize + cellSize / 2f
+                        val (x1, y1) = calcDot(i, cols1)
+                        val (x2, y2) = calcDot(i, cols2)
+                        val cx = x1 + (x2 - x1) * fraction
+                        val cy = y1 + (y2 - y1) * fraction
+                        
                         val color = when {
                             i + 1 < currentDay  -> pastColor
                             i + 1 == currentDay -> todayColor

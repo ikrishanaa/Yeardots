@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -298,6 +300,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
     val context = LocalContext.current
@@ -432,13 +435,13 @@ fun SettingsScreen() {
         }
 
         // Preview Card
-        Card(
+        ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
         ) {
             Column(
                 modifier = Modifier.padding(6.dp),
@@ -488,13 +491,13 @@ fun SettingsScreen() {
         }
 
         // Color Palette Card
-        Card(
+        ElevatedCard(
            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
@@ -560,13 +563,13 @@ fun SettingsScreen() {
         }
 
         // Shape Selection Card
-        Card(
+        ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
@@ -593,15 +596,17 @@ fun SettingsScreen() {
                         modifier = Modifier.weight(1f),
                         selected = currentDotShape == "circle",
                         onClick = { pendingDotShape = "circle" }
-                    ) {
+                    ) { isSelected ->
+                        val shapeColor by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface 
+                                          else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            animationSpec = tween(300),
+                            label = "shapeColor"
+                        )
                         Box(
                             modifier = Modifier
                                 .size(20.dp)
-                                .background(
-                                    if (currentDotShape == "circle") MaterialTheme.colorScheme.onSurface 
-                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    CircleShape
-                                )
+                                .background(shapeColor, CircleShape)
                         )
                     }
                     
@@ -617,15 +622,17 @@ fun SettingsScreen() {
                         modifier = Modifier.weight(1f),
                         selected = currentDotShape == "rounded",
                         onClick = { pendingDotShape = "rounded" }
-                    ) {
+                    ) { isSelected ->
+                        val shapeColor by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface 
+                                          else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            animationSpec = tween(300),
+                            label = "shapeColor"
+                        )
                         Box(
                             modifier = Modifier
                                 .size(20.dp)
-                                .background(
-                                    if (currentDotShape == "rounded") MaterialTheme.colorScheme.onSurface 
-                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    RoundedCornerShape(6.dp)
-                                )
+                                .background(shapeColor, RoundedCornerShape(6.dp))
                         )
                     }
                     
@@ -641,15 +648,17 @@ fun SettingsScreen() {
                         modifier = Modifier.weight(1f),
                         selected = currentDotShape == "square",
                         onClick = { pendingDotShape = "square" }
-                    ) {
+                    ) { isSelected ->
+                        val shapeColor by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface 
+                                          else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            animationSpec = tween(300),
+                            label = "shapeColor"
+                        )
                         Box(
                             modifier = Modifier
                                 .size(20.dp)
-                                .background(
-                                    if (currentDotShape == "square") MaterialTheme.colorScheme.onSurface 
-                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    RoundedCornerShape(2.dp)
-                                )
+                                .background(shapeColor, RoundedCornerShape(2.dp))
                         )
                     }
                     
@@ -665,7 +674,13 @@ fun SettingsScreen() {
                         modifier = Modifier.weight(1f),
                         selected = currentDotShape == "pill",
                         onClick = { pendingDotShape = "pill" }
-                    ) {
+                    ) { isSelected ->
+                        val shapeColor by animateColorAsState(
+                            targetValue = if (isSelected) MaterialTheme.colorScheme.onSurface 
+                                          else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            animationSpec = tween(300),
+                            label = "shapeColor"
+                        )
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxSize()
@@ -674,11 +689,7 @@ fun SettingsScreen() {
                                 modifier = Modifier
                                     .width(24.dp)
                                     .height(12.dp)
-                                    .background(
-                                        if (currentDotShape == "pill") MaterialTheme.colorScheme.onSurface 
-                                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                        RoundedCornerShape(50)
-                                    )
+                                    .background(shapeColor, RoundedCornerShape(50))
                             )
                         }
                     }
@@ -687,12 +698,13 @@ fun SettingsScreen() {
         }
 
         // Size Section
-        Card(
+        ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
+            colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            )
+            ),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
@@ -707,43 +719,28 @@ fun SettingsScreen() {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
-                        .padding(16.dp)
+                        .padding(vertical = 8.dp)
                 ) {
-                    Column {
-                        // Slider
-                        Slider(
-                            value = currentDotDensity.toFloat(),
-                            onValueChange = { pendingDotDensity = it.toInt() },
-                            valueRange = 0f..3f,
-                            steps = 2,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.surface,
-                                activeTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                inactiveTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        // Labels
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            val labels = listOf("Tiny", "Small", "Medium", "Large")
-                            labels.forEachIndexed { index, label ->
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        val labels = listOf("Tiny", "Small", "Medium", "Large")
+                        labels.forEachIndexed { index, label ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = labels.size),
+                                onClick = { pendingDotDensity = index },
+                                selected = index == currentDotDensity,
+                                colors = SegmentedButtonDefaults.colors(
+                                    activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    inactiveContainerColor = MaterialTheme.colorScheme.surface,
+                                    inactiveContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            ) {
                                 Text(
-                                    text = label.uppercase(),
-                                    fontSize = 10.sp,
-                                    fontWeight = if (index == currentDotDensity) FontWeight.Bold else FontWeight.SemiBold,
-                                    letterSpacing = 0.8.sp,
-                                    color = if (index == currentDotDensity) 
-                                        MaterialTheme.colorScheme.onSurface 
-                                    else 
-                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    text = label, 
+                                    fontSize = 12.sp,
+                                    fontWeight = if (index == currentDotDensity) FontWeight.Bold else FontWeight.Medium
                                 )
                             }
                         }
@@ -934,6 +931,12 @@ fun ColorPaletteItem(
     hasGlow: Boolean = false,
     hasBorder: Boolean = false
 ) {
+    val animatedColor by animateColorAsState(
+        targetValue = color,
+        animationSpec = tween(300),
+        label = "color"
+    )
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
@@ -975,13 +978,13 @@ fun ColorPaletteItem(
                         ) else Modifier
                     )
                     .clip(CircleShape)
-                    .background(color)
+                    .background(animatedColor)
                     .then(
                         if (hasGlow) Modifier.shadow(
                             elevation = 12.dp,
                             shape = CircleShape,
-                            ambientColor = color.copy(alpha = 0.4f),
-                            spotColor = color.copy(alpha = 0.4f)
+                            ambientColor = animatedColor.copy(alpha = 0.4f),
+                            spotColor = animatedColor.copy(alpha = 0.4f)
                         ) else Modifier
                     )
             )
@@ -995,19 +998,23 @@ fun ShapeSelectorItem(
     modifier: Modifier = Modifier,
     selected: Boolean,
     onClick: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable (Boolean) -> Unit
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f) 
+                      else Color.Transparent,
+        animationSpec = tween(300),
+        label = "backgroundColor"
+    )
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(
-                if (selected) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                else Color.Transparent
-            )
+            .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(vertical = 16.dp),
         contentAlignment = Alignment.Center
     ) {
-        content()
+        content(selected)
     }
 }

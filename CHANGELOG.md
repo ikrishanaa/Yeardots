@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple calendar systems (lunar, ISO week-based)
 - Milestone markers for important dates
 
+## [1.32.0] - 2026-08-04
+
+### Added
+- **Material 3 Premium UI Overhaul**: Transitioned all components to the modern Material 3 design system with dynamic, depth-focused `ElevatedCard` containers.
+- **Fluid Layout Shift & Spring Physics**: Layout Editor grid now resizes smoothly with spring physics and calculates dot positions continuously during aspect ratio changes.
+- **Segmented Button Controls**: Replaced static sliders and buttons with fluid, animated `SingleChoiceSegmentedButtonRow` controls for shape and size selection.
+- **Animated Micro-interactions**: Added buttery smooth `animateColorAsState` transitions when selecting color palettes.
+
 ## [1.31.0] - 2026-08-04
 
 ### Added

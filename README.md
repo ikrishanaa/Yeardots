@@ -32,11 +32,13 @@ Designed for fans of **Stoicism**, **digital minimalism**, and quantifiable self
 
 ### Core Functionality
 - **365-Dot Calendar Grid** - Visual representation of the entire year
+- **Material 3 Premium UI** - Beautiful, fluid interface with glassmorphism effects and spring-physics animations
 - **Automatic Daily Updates** - Wallpaper refreshes at midnight using WorkManager
-- **Fully Customizable Colors** - Choose colors for past, present, future, and background
+- **Fully Customizable Colors** - Choose colors for past, present, future, and background with smooth cross-fade transitions
+- **Animated Controls** - Utilize premium `SegmentedButton` controls to elegantly select shapes and sizes
 - **Four Dot Shapes** - Circle, Rounded Square, Square, and Pill
 - **Four Size Options** - Tiny, Small, Medium, and Large dot densities
-- **Pro Grid Editor** - Fully responsive 8-handle layout editor to perfectly align dots around your lock screen clock
+- **Pro Grid Editor** - Fully responsive 8-handle layout editor to perfectly align dots around your lock screen clock, featuring fluid spring-animated layout shifts
 - **OEM Clock Presets** - Built-in lock screen clock guides (Small, Medium, Large, XL) for precise visual placement
 - **Live Preview** - See changes in real-time before applying
 
