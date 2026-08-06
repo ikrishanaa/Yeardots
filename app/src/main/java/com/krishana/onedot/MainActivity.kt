@@ -72,13 +72,17 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
             }
             android.util.Log.d("YearDots", "All permissions OK, getting WallpaperManager...")
             val wallpaperManager = WallpaperManager.getInstance(context)
-            val displayMetrics = context.resources.displayMetrics
-            val screenWidth = displayMetrics.widthPixels
-            val screenHeight = displayMetrics.heightPixels
-            val width = (screenWidth * 1.5f).toInt()
-            val height = (screenHeight * 1.5f).toInt()
-            android.util.Log.d("YearDots", "Screen dimensions: ${screenWidth}x${screenHeight}")
-            android.util.Log.d("YearDots", "Wallpaper dimensions (1.5x super-sampled): ${width}x${height}")
+            val desiredWidth = wallpaperManager.desiredMinimumWidth
+            val desiredHeight = wallpaperManager.desiredMinimumHeight
+
+            val (width, height) = if (desiredWidth > 0 && desiredHeight > 0) {
+                Pair(desiredWidth, desiredHeight)
+            } else {
+                val displayMetrics = context.resources.displayMetrics
+                Pair(displayMetrics.widthPixels, displayMetrics.heightPixels)
+            }
+            
+            android.util.Log.d("YearDots", "Wallpaper dimensions: ${width}x${height}")
             try {
                 wallpaperManager.suggestDesiredDimensions(width, height)
             } catch (_: SecurityException) { }
@@ -104,10 +108,18 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
             )
             android.util.Log.d("YearDots", "Generating wallpaper bitmap...")
             val bitmap = WallpaperGenerator.generateBitmap(width, height, themeConfig)
+            
+            val stream = java.io.ByteArrayOutputStream()
             try {
-                android.util.Log.d("YearDots", "Setting wallpaper on LOCK SCREEN...")
-                wallpaperManager.setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
-                android.util.Log.d("YearDots", "✓ Wallpaper set successfully at ${width}x${height}!")
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                val inputStream = java.io.ByteArrayInputStream(stream.toByteArray())
+                try {
+                    android.util.Log.d("YearDots", "Setting wallpaper on LOCK SCREEN...")
+                    wallpaperManager.setStream(inputStream, null, false, WallpaperManager.FLAG_LOCK)
+                    android.util.Log.d("YearDots", "✓ Wallpaper set successfully at ${width}x${height}!")
+                } finally {
+                    inputStream.close()
+                }
             } catch (e: SecurityException) {
                 throw SecurityException("Permission denied when setting wallpaper.", e)
             } catch (e: IllegalArgumentException) {
@@ -115,6 +127,7 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
             } catch (e: Exception) {
                 throw Exception("Failed to set wallpaper: ${e.message}", e)
             } finally {
+                stream.close()
                 bitmap.recycle()
             }
         } catch (e: Exception) {
