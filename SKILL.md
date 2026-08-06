@@ -51,3 +51,12 @@ The `WallpaperWorker` runs daily to update the wallpaper.
 - The project uses Gradle Kotlin DSL (`build.gradle.kts`).
 - GitHub Actions CI is configured in `.github/workflows/build.yml` and `release.yml`.
 - **NEVER** add `org.gradle.java.home` to the project's `gradle.properties`. It breaks the CI runners. JDK paths belong strictly in local user configurations (`~/.gradle/gradle.properties`).
+
+## 6. AI Agent Learnings & Best Practices
+Over the course of developing this app, several specific Android edge cases were discovered. AI agents MUST adhere to these rules when refactoring or adding features:
+
+- **Adaptive Icons in Compose**: Do NOT use `painterResource` to load XML Adaptive Icons (like `ic_launcher.xml`) into a Compose UI element. It will crash the app on certain Android versions. Instead, build the UI element manually using standard Compose shapes, colors, and raster images.
+- **DisplayMetrics Deprecation**: When calculating screen sizes for full-bleed wallpapers, avoid `DisplayMetrics`. Prefer using the exact `desiredMinimumWidth` and `desiredMinimumHeight` provided by `WallpaperManager`. If fallback is needed, use `WindowMetrics`.
+- **Scaling Artifacts**: Never artificially scale up resolution (e.g., `width * 1.5f`) hoping to improve quality. This creates blurriness when Android downscales it. Generate the bitmap at the exact native dimensions requested by the OS.
+- **State Hoisting**: The `LayoutEditorScreen` uses complex drag-and-drop mechanics. Always maintain state hoisting; never bury state inside deep child components to ensure the layout editor remains reactive to Spring physics.
+- **Repository Hygiene**: Do not leave test or scratch files (`test_algo.kt`, `CheckSegmentedIcon.kt`) in the root or package structure. Move them to a scratch directory or delete them before committing.
