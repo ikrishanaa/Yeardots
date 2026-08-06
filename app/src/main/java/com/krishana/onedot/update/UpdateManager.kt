@@ -236,7 +236,7 @@ class UpdateManager(private val context: Context) {
         var cursor: Cursor? = null
         try {
             cursor = mgr.query(DownloadManager.Query().setFilterById(id))
-            if (cursor == null || cursor.moveToFirst()) return DownloadProgress()
+            if (cursor == null || !cursor.moveToFirst()) return DownloadProgress()
 
             val sIdx = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
             val dIdx = cursor.getColumnIndex(
