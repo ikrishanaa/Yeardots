@@ -1,0 +1,46 @@
+# YearDots — Agent Instructions
+
+> For AI-powered code editors (Cursor, GitHub Copilot, Windsurf, etc.)
+
+## Project
+
+Android lock-screen wallpaper app — 365 dots representing the year's progress.
+Built with Kotlin, Jetpack Compose, Material 3, WorkManager, DataStore.
+
+## Key Conventions
+
+- **Single Activity**: All UI lives in `MainActivity.kt` via Compose.
+- **No Fragments**: Pure Compose navigation with state hoisting.
+- **Kotlin-only**: No Java files. Use Kotlin idioms (data classes, coroutines, flows).
+- **Material 3**: All UI components must use `MaterialTheme` tokens.
+
+## Package Structure
+
+```
+com.krishana.onedot
+├── core/        → Business logic (WallpaperGenerator)
+├── data/        → Persistence (SettingsRepository / DataStore)
+├── receiver/    → BroadcastReceivers (BootReceiver)
+├── ui/
+│   ├── components/  → Reusable Compose screens & dialogs
+│   └── theme/       → Theme, Typography, Color definitions
+├── util/        → Utilities (WorkScheduler)
+└── worker/      → Background workers (WallpaperWorker)
+```
+
+## Do NOT
+
+- Use `ChronoUnit.DAYS.between()` for day-of-year — use `today.dayOfYear`
+- Use `isLeapYear` boolean — use `Year.of(year).length()`
+- Put `org.gradle.java.home` in project `gradle.properties`
+- Load adaptive icon XML via `painterResource()` in Compose
+- Use `WallpaperManager.setBitmap()` — use `setStream()` with PNG
+- Schedule WorkManager before midnight (target 01:00 AM minimum)
+
+## Do
+
+- Keep the wallpaper text format: `"$daysLeft days left • $percent% done"`
+- Compress wallpaper bitmap as PNG at quality 100
+- Set wallpaper with `FLAG_LOCK` (lock screen only)
+- Update `CHANGELOG.md` before every version tag
+- Use spring animations for UI transitions
