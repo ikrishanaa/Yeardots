@@ -6,7 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
+import java.time.Year
 import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -55,14 +55,14 @@ object WallpaperGenerator {
         canvas.drawColor(themeConfig.backgroundColor)
 
         val today = LocalDate.now()
-        val yearStart = LocalDate.of(today.year, 1, 1)
-        val daysInYear = if (today.isLeapYear) 366 else 365
-        val currentDayOfYear = ChronoUnit.DAYS.between(yearStart, today).toInt() + 1
-        
-        // CRITICAL FIX #1: Handle leap year correctly - use actual days in year
-        // In leap years, we have 366 days, so we must render 366 dots
+        // Use Year.length() — the single source of truth for days-in-year.
+        // Avoids any manual leap-year logic (366 vs 365).
+        val daysInYear = Year.of(today.year).length()   // 365 or 366
+        // dayOfYear is 1-based: Jan 1 = 1, Dec 31 = 365/366
+        val currentDayOfYear = today.dayOfYear
+
         val totalDots = daysInYear
-        
+
         val daysLeft = daysInYear - currentDayOfYear
         val percent = ((currentDayOfYear.toFloat() / daysInYear) * 100).toInt()
 
@@ -219,7 +219,7 @@ object WallpaperGenerator {
             typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL)
         }
 
-        val text = "$daysLeft days \u2022 $percent% Complete"
+        val text = "$daysLeft days left \u2022 $percent% done"
         
         // Draw text at dynamically calculated position below the grid
         canvas.drawText(text, width / 2f, textYPosition, textPaint)

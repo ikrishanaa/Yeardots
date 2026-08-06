@@ -25,7 +25,7 @@ jobs:
       run: chmod +x gradlew
       
     - name: Build with Gradle
-      run: ./gradlew assembleDebug --stacktrace
+      run: ./gradlew assembleDebug --stacktrace -Dorg.gradle.java.home=$JAVA_HOME
       
     # Run unit tests - 5 tests expected to fail due to test environment limitations
     # See walkthrough.md for details on expected failures
