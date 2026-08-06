@@ -13,6 +13,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple calendar systems (lunar, ISO week-based)
 - Milestone markers for important dates
 
+## [2.0.1] - 2026-08-06
+
+### Fixed
+- **Critical: Wallpaper day count was off by one** — Worker could fire before midnight due to a 60-minute flex window spanning [23:01, 00:01], causing `LocalDate.now()` to return yesterday's date. Moved target to 01:00 AM so the window is [00:00, 01:00], entirely after midnight.
+- **Leap year logic hardened** — Replaced manual `isLeapYear` check with `Year.of(year).length()` and `today.dayOfYear` for bulletproof day counting.
+- **Ambiguous text label** — Changed wallpaper text from `"X days"` to `"X days left • Y% done"` so the meaning is clear.
+- **GitHub Actions CI permanently fixed** — Removed hardcoded `org.gradle.java.home` from project `gradle.properties`; local builds now use `~/.gradle/gradle.properties` instead.
+
+### Changed
+- Cleaned up root directory structure: moved docs to `docs/`, community files to `.github/`, removed scratch files.
+
+## [2.0.0] - 2026-08-04
+
+### Added
+- **High-Fidelity Adaptive Icons** — Custom Node.js/resvg-js pipeline for pixel-perfect icon rendering with gradients, glow effects, and proper padding across all launcher shapes (circle, square, squircle).
+- **Premium About Dialog** — Rebuilt with custom gradient + image overlay to avoid Adaptive Icon crash in Compose.
+
+### Fixed
+- **App crash on About screen** — Replaced unsupported `painterResource` for Adaptive Icon XML with manual Compose UI.
+- **Icon appeared zoomed in** — Adjusted SVG viewBox to `-160 -160 832 832` for proper padding.
+- Migrated deprecated `Icons.Default.Send` to `Icons.AutoMirrored.Filled.Send`.
+
 ## [1.32.0] - 2026-08-04
 
 ### Added
@@ -88,5 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/ikrishanaa/Yeardots/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ikrishanaa/Yeardots/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/ikrishanaa/Yeardots/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/ikrishanaa/Yeardots/compare/v1.32.0...v2.0.0
 [1.0.0]: https://github.com/ikrishanaa/Yeardots/releases/tag/v1.0.0
