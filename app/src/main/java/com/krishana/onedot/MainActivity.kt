@@ -46,6 +46,7 @@ import com.krishana.onedot.core.WallpaperGenerator
 import com.krishana.onedot.BuildConfig
 import com.krishana.onedot.data.SettingsRepository
 import com.krishana.onedot.ui.components.AboutDialog
+import com.krishana.onedot.ui.components.ChangelogDialog
 import com.krishana.onedot.ui.components.ColorSettingRow
 import com.krishana.onedot.ui.components.DebugInfoRow
 import com.krishana.onedot.ui.components.ImprovedColorPickerDialog
@@ -476,6 +477,19 @@ fun SettingsScreen(
             releaseInfo = updateState!!,
             updateManager = updateManager,
             onDismiss = { pendingUpdate.value = null }
+        )
+    }
+
+    // ── Changelog dialog for new versions ──────────────────────────────
+    val lastSeenVersionCode by repository.lastSeenVersionCodeFlow.collectAsState(initial = -1)
+    if (lastSeenVersionCode != -1 && lastSeenVersionCode < BuildConfig.VERSION_CODE) {
+        ChangelogDialog(
+            versionName = BuildConfig.VERSION_NAME,
+            onDismiss = {
+                scope.launch {
+                    repository.updateLastSeenVersionCode(BuildConfig.VERSION_CODE)
+                }
+            }
         )
     }
 }

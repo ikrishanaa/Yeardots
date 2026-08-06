@@ -26,6 +26,7 @@ class SettingsRepository(private val context: Context) {
         val DOT_SHAPE_KEY = androidx.datastore.preferences.core.stringPreferencesKey("dot_shape")
         val DOT_DENSITY_KEY = intPreferencesKey("dot_density")
         val LAST_UPDATE_KEY = longPreferencesKey("last_update_timestamp")
+        val LAST_SEEN_VERSION_CODE_KEY = intPreferencesKey("last_seen_version_code")
         
         // Grid layout keys — width/height fractions replace the old uniform scale
         val GRID_WIDTH_FRACTION_KEY  = androidx.datastore.preferences.core.floatPreferencesKey("grid_width_fraction")
@@ -73,6 +74,10 @@ class SettingsRepository(private val context: Context) {
 
     val lastUpdateFlow: Flow<Long> = context.dataStore.data.map { preferences ->
         preferences[LAST_UPDATE_KEY] ?: 0L
+    }
+
+    val lastSeenVersionCodeFlow: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[LAST_SEEN_VERSION_CODE_KEY] ?: 0
     }
 
     val gridWidthFractionFlow: Flow<Float> = context.dataStore.data.map { preferences ->
@@ -130,6 +135,12 @@ class SettingsRepository(private val context: Context) {
     suspend fun updateLastUpdateTimestamp(timestamp: Long) {
         context.dataStore.edit { preferences ->
             preferences[LAST_UPDATE_KEY] = timestamp
+        }
+    }
+
+    suspend fun updateLastSeenVersionCode(versionCode: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[LAST_SEEN_VERSION_CODE_KEY] = versionCode
         }
     }
 
