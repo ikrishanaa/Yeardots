@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.krishana.onedot.core.WallpaperGenerator
+import com.krishana.onedot.BuildConfig
 import com.krishana.onedot.data.SettingsRepository
 import com.krishana.onedot.ui.components.AboutDialog
 import com.krishana.onedot.ui.components.ColorSettingRow
@@ -49,8 +51,11 @@ import com.krishana.onedot.ui.components.DebugInfoRow
 import com.krishana.onedot.ui.components.ImprovedColorPickerDialog
 import com.krishana.onedot.ui.components.ShapeOptionItem
 import com.krishana.onedot.ui.theme.OneDotTheme
+import com.krishana.onedot.update.UpdateAvailableDialog
+import com.krishana.onedot.update.UpdateManager
 import com.krishana.onedot.util.WorkScheduler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -141,6 +146,11 @@ suspend fun applyWallpaperNow(context: Context, repository: SettingsRepository) 
 
 class MainActivity : ComponentActivity() {
     private var hasPermissions by mutableStateOf(false)
+    private val updateManager by lazy { UpdateManager(this) }
+
+    // MutableStateFlow so Compose can collect it reactively
+    private val _pendingUpdate = MutableStateFlow<UpdateManager.ReleaseInfo?>(null)
+
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -156,6 +166,22 @@ class MainActivity : ComponentActivity() {
         checkPermissions()
         if (!hasPermissions) requestPermissions()
         WorkScheduler.scheduleDailyWallpaperUpdate(this)
+
+        // ── Silently check for updates on GitHub ──────────────────────
+        lifecycleScope.launch {
+            try {
+                val latest = updateManager.fetchLatestRelease()
+                if (latest != null) {
+                    val currentVersion = BuildConfig.VERSION_NAME
+                    if (updateManager.compareVersions(latest.version, currentVersion) > 0) {
+                        _pendingUpdate.value = latest
+                    }
+                }
+            } catch (_: Exception) {
+                // Silently skip — user doesn't need to see network errors
+            }
+        }
+
         setContent {
             OneDotTheme {
                 Surface(
@@ -181,7 +207,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
-                        SettingsScreen()
+                        SettingsScreen(pendingUpdate = _pendingUpdate)
                     }
                 }
             }
@@ -202,8 +228,11 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    pendingUpdate: MutableStateFlow<UpdateManager.ReleaseInfo?>
+) {
     val context = LocalContext.current
+    val updateManager = remember { UpdateManager(context) }
     val repository = remember { SettingsRepository(context) }
     val scope = rememberCoroutineScope()
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -437,6 +466,16 @@ fun SettingsScreen() {
                 }) { Text("Apply") }
             },
             dismissButton = { TextButton(onClick = { showSaveDialog = false }) { Text("Cancel") } }
+        )
+    }
+
+    // ── Auto-updater dialog ────────────────────────────────────────────
+    val updateState by pendingUpdate.collectAsState()
+    if (updateState != null) {
+        UpdateAvailableDialog(
+            releaseInfo = updateState!!,
+            updateManager = updateManager,
+            onDismiss = { pendingUpdate.value = null }
         )
     }
 }
