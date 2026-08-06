@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple calendar systems (lunar, ISO week-based)
 - Milestone markers for important dates
 
+## [2.0.3] - 2026-08-06
+
+### Added
+- **Material 3 Premium Progress Indicator** — Added a custom, smooth "snake-like" wavy animation to the in-app update dialog progress bar, replicating M3 guidelines with pill shapes and gap logic.
+
+### Fixed
+- Hardened `UpdateDialog` runtime permissions and `FileProvider` pathing for secure APK distribution and installation.
+- Ensured `UpdateManager` accurately tracks progress and prevents UI hangs.
+
 ## [2.0.2] - 2026-08-06
 
 ### Fixed
@@ -116,7 +125,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/ikrishanaa/Yeardots/compare/v2.0.2...HEAD
+[Unreleased]: https://github.com/ikrishanaa/Yeardots/compare/v2.0.3...HEAD
+[2.0.3]: https://github.com/ikrishanaa/Yeardots/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/ikrishanaa/Yeardots/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/ikrishanaa/Yeardots/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/ikrishanaa/Yeardots/compare/v1.32.0...v2.0.0

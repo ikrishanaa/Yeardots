@@ -162,13 +162,10 @@ fun UpdateAvailableDialog(
                             color = MaterialTheme.colorScheme.primary
                         )
 
-                        LinearProgressIndicator(
-                            progress = { downloadPercent / 100f },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        M3LinearProgressIndicator(
+                            progress = downloadPercent / 100f,
+                            modifier = Modifier.fillMaxWidth(),
+                            trackThickness = 8.dp
                         )
 
                         Text(
